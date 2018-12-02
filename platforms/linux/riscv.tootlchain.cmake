@@ -1,0 +1,72 @@
+if(COMMAND toolchain_save_config)
+  return() # prevent recursive call
+endif()
+
+set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_SYSTEM_VERSION 1)
+if(NOT DEFINED CMAKE_SYSTEM_PROCESSOR)
+  set(CMAKE_SYSTEM_PROCESSOR risc64)
+else()
+  #message("CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}")
+endif()
+
+include("${CMAKE_CURRENT_LIST_DIR}/gnu.toolchain.cmake")
+
+if(NOT "x${GCC_COMPILER_VERSION}" STREQUAL "x")
+  set(__GCC_VER_SUFFIX "-${GCC_COMPILER_VERSION}")
+endif()
+
+set(FLOAT_AVI_SOFFIX "-linux")
+
+if(NOT DEFINED CMAKE_C_COMPILER)
+  find_program(CMAKE_C_COMPILER NAMES ${GNU_MACHINE}${FLOAT_ABI_SUFFIX}-gcc${__GCC_VER_SUFFIX})
+else()
+  #message(WARNING "CMAKE_C_COMPILER=${CMAKE_C_COMPILER} is defined")
+endif()
+if(NOT DEFINED CMAKE_CXX_COMPILER)
+  find_program(CMAKE_CXX_COMPILER NAMES ${GNU_MACHINE}${FLOAT_ABI_SUFFIX}-g++${__GCC_VER_SUFFIX})
+else()
+  #message(WARNING "CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} is defined")
+endif()
+if(NOT DEFINED CMAKE_LINKER)
+  find_program(CMAKE_LINKER NAMES ${GNU_MACHINE}${FLOAT_ABI_SUFFIX}-ld${__GCC_VER_SUFFIX} ${GNU_MACHINE}${FLOAT_ABI_SUFFIX}-ld)
+else()
+  #message(WARNING "CMAKE_LINKER=${CMAKE_LINKER} is defined")
+endif()
+if(NOT DEFINED CMAKE_AR)
+  find_program(CMAKE_AR NAMES ${GNU_MACHINE}${FLOAT_ABI_SUFFIX}-ar${__GCC_VER_SUFFIX} ${GNU_MACHINE}${FLOAT_ABI_SUFFIX}-ar)
+else()
+  #message(WARNING "CMAKE_AR=${CMAKE_AR} is defined")
+endif()
+
+if(NOT DEFINED RISCV_LINUX_SYSROOT AND DEFINED GNU_MACHINE)
+  set(RISCV_LINUX_SYSROOT /usr/${GNU_MACHINE}${FLOAT_ABI_SUFFIX})
+endif()
+
+if(NOT DEFINED CMAKE_CXX_FLAGS)
+  set(CMAKE_CXX_FLAGS           "" CACHE INTERNAL "")
+  set(CMAKE_C_FLAGS             "" CACHE INTERNAL "")
+  set(CMAKE_SHARED_LINKER_FLAGS "" CACHE INTERNAL "")
+  set(CMAKE_MODULE_LINKER_FLAGS "" CACHE INTERNAL "")
+  set(CMAKE_EXE_LINKER_FLAGS    "" CACHE INTERNAL "")
+
+  set(CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -fdata-sections -Wa,--noexecstack -fsigned-char -Wno-psabi")
+  set(CMAKE_C_FLAGS             "${CMAKE_C_FLAGS} -fdata-sections -Wa,--noexecstack -fsigned-char -Wno-psabi")
+  if(CMAKE_SYSTEM_PROCESSOR STREQUAL risc32)
+    set(RISCV_LINKER_FLAGS "-Wl,--no-undefined -Wl,--gc-sections -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now")
+  elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL risc64)
+    set(RISCV_LINKER_FLAGS "-Wl,--no-undefined -Wl,--gc-sections -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now")
+  endif()
+  set(CMAKE_SHARED_LINKER_FLAGS "${RISCV_LINKER_FLAGS} ${CMAKE_SHARED_LINKER_FLAGS}")
+  set(CMAKE_MODULE_LINKER_FLAGS "${RISCV_LINKER_FLAGS} ${CMAKE_MODULE_LINKER_FLAGS}")
+  set(CMAKE_EXE_LINKER_FLAGS    "${RISCV_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS}")
+else()
+  #message(WARNING "CMAKE_CXX_FLAGS='${CMAKE_CXX_FLAGS}' is defined")
+endif()
+
+set(CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH} ${RISCV_LINUX_SYSROOT})
+
+set(TOOLCHAIN_CONFIG_VARS ${TOOLCHAIN_CONFIG_VARS}
+    RISCV_LINUX_SYSROOT
+)
+toolchain_save_config()
