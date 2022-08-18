@@ -480,7 +480,6 @@ bool  TiffDecoder::readData( Mat& img )
             const uint64_t MAX_TILE_SIZE = (CV_BIG_UINT(1) << 30);
             CV_CheckLE((int)ncn, 4, "");
             CV_CheckLE((int)bpp, 64, "");
-            CV_Assert(((uint64_t)tile_width0 * tile_height0 * ncn * std::max(1, (int)(bpp / bitsPerByte)) < MAX_TILE_SIZE) && "TIFF tile size is too large: >= 1Gb");
 
             if (dst_bpp == 8)
             {
@@ -493,6 +492,8 @@ bool  TiffDecoder::readData( Mat& img )
                 CV_Assert(ncn == img.channels());
                 CV_TIFF_CHECK_CALL(TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_IEEEFP));
             }
+
+            CV_Assert(((uint64_t)tile_width0 * tile_height0 * ncn * std::max(1, (int)(bpp / bitsPerByte)) < MAX_TILE_SIZE) && "buffer_size is too large: >= 1Gb");
             const size_t buffer_size = (bpp / bitsPerByte) * ncn * tile_height0 * tile_width0;
             AutoBuffer<uchar> _buffer(buffer_size);
             uchar* buffer = _buffer.data();

@@ -46,6 +46,140 @@ TEST(Imgcodecs_Tiff, decode_tile16384x16384)
     EXPECT_EQ(0, remove(file4.c_str()));
 }
 
+#ifdef __ANDROID__
+// Test disabled as it uses a lot of memory.
+// It is killed with SIGKILL by out of memory killer.
+TEST(Imgcodecs_Tiff, DISABLED_decode_issue22388_48bpp)
+#else
+TEST(Imgcodecs_Tiff, decode_issue22388_48bpp)
+#endif
+{
+    cv::Mat big(5462, 32768, CV_16UC3, cv::Scalar::all(0));
+    string file3 = cv::tempfile(".tiff"); // Over 1GB
+    string file4 = cv::tempfile(".tiff"); // Not Over 1GB
+
+    std::vector<int> params;
+    params.push_back(TIFFTAG_ROWSPERSTRIP);
+    params.push_back(big.rows);
+    EXPECT_NO_THROW(cv::imwrite(file3, big, params));
+    EXPECT_NO_THROW(cv::imwrite(file4, big.rowRange(0, big.rows -1), params));
+    big.release();
+
+    cv::Mat output;
+    {
+        /**
+         * [Case 1] Reading as 8bpp (IMREAD_COLOR)
+         * - file4 is 5461 * 32768 * 48bit.
+         * - buffer is allocated as 32 bpp image.
+         * - buffer_size is 715,784,192 byte(<1GB).
+         * - imread() must be successed.
+         */
+        EXPECT_NO_THROW(output = cv::imread(file4));
+        ASSERT_FALSE(output.empty()) << "Can't read image." ;
+        EXPECT_NO_THROW(output = cv::imread(file4, IMREAD_COLOR));
+        ASSERT_FALSE(output.empty()) << "Can't read image." ;
+
+        /**
+         * [Case 2] Reading as 16bpp (IMREAD_ANYDEPTH/IMREAD_UNCHANGED)
+         * - file4 is 5461 * 32768 * 48bit.
+         * - buffer is allocated as 48 bpp image.
+         * - buffer_size is 1,073,676,288 byte(<1GB).
+         * - imread() must be successed.
+         */
+        EXPECT_NO_THROW(output = cv::imread(file4, IMREAD_ANYDEPTH));
+        ASSERT_FALSE(output.empty()) << "Can't read image." ;
+        EXPECT_NO_THROW(output = cv::imread(file4, IMREAD_UNCHANGED));
+        ASSERT_FALSE(output.empty()) << "Can't read image." ;
+    }
+    {
+        /**
+         * [Case 3] Reading as 8bpp (IMREAD_COLOR)
+         * - file3 is 5462 * 32768 * 48bit.
+         * - buffer is allocated as 32 bpp image.
+         * - buffer_size is 715,915,264 byte(<1GB).
+         * - imread() must be successed.
+         */
+        EXPECT_NO_THROW(output = cv::imread(file3));
+        ASSERT_FALSE(output.empty()) << "Can't read image." ;
+        EXPECT_NO_THROW(output = cv::imread(file3, IMREAD_COLOR));
+        ASSERT_FALSE(output.empty()) << "Can't read image." ;
+
+        /**
+         * [Case 4] Reading as 16bpp (IMREAD_ANYDEPTH/IMREAD_UNCHANGED)
+         * - file3 is 5462(H) * 32768(W) * 48bit.
+         * - buffer is allocated as 48 bpp image.
+         * - buffer_size is 1,073,872,896 byte(>=1GB)
+         * - imread() must be failed.
+         */
+        EXPECT_NO_THROW(output = cv::imread(file3, IMREAD_ANYDEPTH));
+        ASSERT_TRUE(output.empty()) << "it should not be read." ;
+        EXPECT_NO_THROW(output = cv::imread(file3, IMREAD_UNCHANGED));
+        ASSERT_TRUE(output.empty()) << "it should not be read." ;
+    }
+    EXPECT_EQ(0, remove(file3.c_str()));
+    EXPECT_EQ(0, remove(file4.c_str()));
+}
+
+#ifdef __ANDROID__
+// Test disabled as it uses a lot of memory.
+// It is killed with SIGKILL by out of memory killer.
+TEST(Imgcodecs_Tiff, DISABLED_decode_issue22388_24bpp)
+#else
+TEST(Imgcodecs_Tiff, decode_issue22388_24bpp)
+#endif
+{
+    cv::Mat big(8192, 32768, CV_8UC3, cv::Scalar::all(0));
+    string file3 = cv::tempfile(".tiff"); // Over 1GB
+    string file4 = cv::tempfile(".tiff"); // Not Over 1GB
+
+    std::vector<int> params;
+    params.push_back(TIFFTAG_ROWSPERSTRIP);
+    params.push_back(big.rows);
+    EXPECT_NO_THROW(cv::imwrite(file3, big, params));
+    EXPECT_NO_THROW(cv::imwrite(file4, big.rowRange(0, big.rows -1), params));
+    big.release();
+
+    cv::Mat output;
+    {
+        /**
+         * [Case 1] IMREAD_COLOR/IMREAD_ANYDEPTH/IMREAD_UNCHANGED
+         * - file4 is 8191 * 32768 * 8bit * 3 channel.
+         * - buffer is allocated as 32 bpp image.
+         * - buffer_size is 1,073,610,752 byte(<1GB).
+         * - imread() must be successed.
+         */
+        EXPECT_NO_THROW(output = cv::imread(file4));
+        ASSERT_FALSE(output.empty()) << "Can't read image." ;
+        EXPECT_NO_THROW(output = cv::imread(file4, IMREAD_COLOR));
+        ASSERT_FALSE(output.empty()) << "Can't read image." ;
+
+        EXPECT_NO_THROW(output = cv::imread(file4, IMREAD_ANYDEPTH));
+        ASSERT_FALSE(output.empty()) << "Can't read image." ;
+        EXPECT_NO_THROW(output = cv::imread(file4, IMREAD_UNCHANGED));
+        ASSERT_FALSE(output.empty()) << "Can't read image." ;
+    }
+    {
+        /**
+         * [Case 2] IMREAD_COLOR/IMREAD_ANYDEPTH/IMREAD_UNCHANGED
+         * - file3 is 8192 * 32768 * 8bit * 3 channel.
+         * - buffer is allocated as 32 bpp image.
+         * - buffer_size is 1,073,676,288(>=1GB).
+         * - imread() must be failed.
+         */
+        EXPECT_NO_THROW(output = cv::imread(file3));
+        ASSERT_TRUE(output.empty()) << "it should not be read." ;
+        EXPECT_NO_THROW(output = cv::imread(file3, IMREAD_COLOR));
+        ASSERT_TRUE(output.empty()) << "it should not be read." ;
+
+        EXPECT_NO_THROW(output = cv::imread(file3, IMREAD_ANYDEPTH));
+        ASSERT_TRUE(output.empty()) << "it should not be read." ;
+        EXPECT_NO_THROW(output = cv::imread(file3, IMREAD_UNCHANGED));
+        ASSERT_TRUE(output.empty()) << "it should not be read." ;
+    }
+    EXPECT_EQ(0, remove(file3.c_str()));
+    EXPECT_EQ(0, remove(file4.c_str()));
+}
+
 TEST(Imgcodecs_Tiff, write_read_16bit_big_little_endian)
 {
     // see issue #2601 "16-bit Grayscale TIFF Load Failures Due to Buffer Underflow and Endianness"
