@@ -486,6 +486,10 @@ bool  TiffDecoder::readData( Mat& img )
 
                     doReadScanline = (!is_tiled) // no tile
                                      &&
+                                     ( ( ncn == 1 ) || ( ncn == 3 ) || ( ncn == 4 ) )
+                                     &&
+                                     ( ( bpp == 8 ) || ( bpp == 16 ) )
+                                     &&
                                      (tile_height0 == (uint32_t) m_height) // single strip
                                      &&
                                      (
@@ -538,6 +542,10 @@ bool  TiffDecoder::readData( Mat& img )
 
                     doReadScanline = (!is_tiled) // no tile
                                      &&
+                                     ( ( ncn == 1 ) || ( ncn == 3 ) || ( ncn == 4 ) )
+                                     &&
+                                     ( ( bpp == 8 ) || ( bpp == 16 ) )
+                                     &&
                                      (tile_height0 == (uint32_t) m_height) // single strip
                                      &&
                                      (
@@ -587,6 +595,10 @@ bool  TiffDecoder::readData( Mat& img )
             ushort* buffer16 = (ushort*)buffer;
             int tileidx = 0;
 
+            #define MAKE_FLAG(a,b) ( (a << 8) | b )
+            const int  convert_flag = MAKE_FLAG( ncn, wanted_channels );
+            const bool isNeedConvert16to8 = ( doReadScanline ) && ( bpp == 16 ) && ( dst_bpp == 8);
+
             for (int y = 0; y < m_height; y += (int)tile_height0)
             {
                 int tile_height = std::min((int)tile_height0, m_height - y);
@@ -605,6 +617,24 @@ bool  TiffDecoder::readData( Mat& img )
                             if (doReadScanline)
                             {
                                 CV_TIFF_CHECK_CALL((int)TIFFReadScanline(tif, (uint32*)buffer, y) >= 0);
+
+                                if ( isNeedConvert16to8 )
+                                {
+                                    // Convert buffer image from 16bit to 8bit.
+                                    int ix;
+                                    for ( ix = 0 ; ix < tile_width * ncn - 4; ix += 4 )
+                                    {
+                                        buffer[ ix     ] = buffer[ ix * 2 + 1 ];
+                                        buffer[ ix + 1 ] = buffer[ ix * 2 + 3 ];
+                                        buffer[ ix + 2 ] = buffer[ ix * 2 + 5 ];
+                                        buffer[ ix + 3 ] = buffer[ ix * 2 + 7 ];
+                                    }
+
+                                    for (        ; ix < tile_width * ncn ; ix ++ )
+                                    {
+                                        buffer[ ix ] = buffer[ ix * 2 + 1];
+                                    }
+                                }
                             }
                             else if (!is_tiled)
                             {
@@ -617,87 +647,60 @@ bool  TiffDecoder::readData( Mat& img )
                                 bstart += (tile_height0 - tile_height) * tile_width0 * 4;
                             }
 
+                            uchar* img_line_buffer = (uchar*) img.ptr(y, 0);
+
                             for (int i = 0; i < tile_height; i++)
                             {
                                 if (doReadScanline)
                                 {
-                                    CV_CheckEQ(1, tile_height, "");
-
-                                    #define MAKE_FLAG(a,b,c) ( ((uint32_t) a << 16 ) | (b << 8) | c )
-
-                                    switch ( MAKE_FLAG( bpp, ncn, wanted_channels ) )
+                                    switch ( convert_flag )
                                     {
-                                    case MAKE_FLAG( 8, 1, 1 ): // GRAY to GRAY
-                                        memcpy( img.ptr(img_y + i, x),
-                                                bstart,
+                                    case MAKE_FLAG( 1, 1 ): // GRAY to GRAY
+                                        memcpy( (void*) img_line_buffer,
+                                                (void*) bstart,
                                                 tile_width * sizeof(uchar) );
                                         break;
 
-                                    case MAKE_FLAG( 16, 1, 1): // GRAY(16) to GRAY(8)
-                                        {
-                                            uchar  *img8 = (uchar*) img.ptr(img_y + i, x );
-                                            for ( int ix = 0 ; ix < tile_width ; ix ++ )
-                                            {
-                                                const ushort v = buffer16[ix];
-                                                img8[ix] = ( v  >> 8 );
-                                            }
-                                        }
-                                        break;
-
-                                    case MAKE_FLAG( 8, 1, 3 ): // GRAY to BGR
+                                    case MAKE_FLAG( 1, 3 ): // GRAY to BGR
                                         icvCvt_Gray2BGR_8u_C1C3R( bstart, 0,
-                                                img.ptr(img_y + i, x), 0,
+                                                img_line_buffer, 0,
                                                 Size(tile_width, 1) );
                                         break;
 
-                                    case MAKE_FLAG( 16, 1, 3 ): // GRAY(16) to BGR(8)
-                                        {
-                                            uchar  *img8 = (uchar*) img.ptr(img_y + i, x );
-                                            for ( int ix = 0 ; ix < tile_width ; ix ++ )
-                                            {
-                                                const ushort v16 = bstart[ix];
-                                                const uchar  v8  = v16 >> 8;
-                                                img8[ix * 3 + 2] =
-                                                img8[ix * 3 + 1] =
-                                                img8[ix * 3 + 0] = v8;
-                                            }
-                                        }
-                                        break;
-
-                                    case MAKE_FLAG( 8, 3, 1): // RGB to GRAY
+                                    case MAKE_FLAG( 3, 1): // RGB to GRAY
                                         icvCvt_BGR2Gray_8u_C3C1R( bstart, 0,
-                                                img.ptr(img_y + i, x), 0,
+                                                img_line_buffer, 0,
                                                 Size(tile_width, 1) );
                                         break;
 
-                                    case MAKE_FLAG( 8, 3, 3): // RGB to BGR
+                                    case MAKE_FLAG( 3, 3 ): // RGB to BGR
                                         icvCvt_BGR2RGB_8u_C3R( bstart, 0,
-                                                img.ptr(img_y + i, x), 0,
+                                                img_line_buffer, 0,
                                                 Size(tile_width, 1) );
                                         break;
 
-                                    case MAKE_FLAG( 8, 4, 1 ): // RGBA to GRAY
+                                    case MAKE_FLAG( 4, 1 ): // RGBA to GRAY
                                         icvCvt_BGRA2Gray_8u_C4C1R( bstart, 0,
-                                                img.ptr(img_y + i, x), 0,
+                                                img_line_buffer, 0,
                                                 Size(tile_width, 1) );
                                         break;
 
-                                    case MAKE_FLAG( 8, 4, 3 ): // RGBA to BGR
+                                    case MAKE_FLAG( 4, 3 ): // RGBA to BGR
                                         icvCvt_BGRA2BGR_8u_C4C3R( bstart, 0,
-                                                img.ptr(img_y + i, x), 0,
+                                                img_line_buffer, 0,
                                                 Size(tile_width, 1), 2 );
                                         break;
 
-                                    case MAKE_FLAG( 8, 4, 4 ): // RGBA to BGRA
+                                    case MAKE_FLAG( 4, 4 ): // RGBA to BGRA
                                         icvCvt_BGRA2RGBA_8u_C4R(bstart, 0,
-                                                img.ptr(img_y + i, x), 0,
+                                                img_line_buffer, 0,
                                                 Size(tile_width, 1) );
                                         break;
 
                                     default:
-                                        CV_LOG_ERROR(NULL, "OpenCV TIFF(line " << __LINE__ << "): Unsupported convertion :"
-                                                           << " bpp = " << bpp << " ncn = " << (int)ncn
-                                                           << "wanted_channels =" << wanted_channels  );
+                                        CV_LOG_ONCE_ERROR(NULL, "OpenCV TIFF(line " << __LINE__ << "): Unsupported convertion :"
+                                                               << " bpp = " << bpp << " ncn = " << (int)ncn
+                                                               << " wanted_channels =" << wanted_channels  );
                                         break;
                                     }
                                     #undef MAKE_FLAG

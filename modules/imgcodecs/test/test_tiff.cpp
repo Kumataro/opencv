@@ -3,6 +3,7 @@
 // of this distribution and at http://opencv.org/license.html
 #include "test_precomp.hpp"
 #include "opencv2/core/utils/logger.hpp"
+#include "opencv2/core/utils/configuration.private.hpp"
 
 namespace opencv_test { namespace {
 
@@ -21,8 +22,6 @@ TEST(Imgcodecs_Tiff, DISABLED_decode_tile16384x16384)
 TEST(Imgcodecs_Tiff, decode_tile16384x16384)
 #endif
 {
-    applyTestTag( CV_TEST_TAG_MEMORY_6GB, CV_TEST_TAG_LONG );
-
     // see issue #2161
     cv::Mat big(16384, 16384, CV_8UC1, cv::Scalar::all(0));
     string file3 = cv::tempfile(".tiff");
@@ -52,7 +51,11 @@ TEST(Imgcodecs_Tiff, decode_tile16384x16384)
 //==================================================================================================
 // See https://github.com/opencv/opencv/issues/22388
 
-enum ImreadMixModes {
+/**
+ * Dummy enum to show combination of IMREAD_*.
+ */
+enum ImreadMixModes
+{
     IMREAD_MIX_UNCHANGED                   = IMREAD_UNCHANGED                                     ,
     IMREAD_MIX_GRAYSCALE                   = IMREAD_GRAYSCALE                                     ,
     IMREAD_MIX_COLOR                       = IMREAD_COLOR                                         ,
@@ -64,6 +67,9 @@ enum ImreadMixModes {
     IMREAD_MIX_COLOR_ANYDEPTH_ANYCOLOR     = IMREAD_COLOR     | IMREAD_ANYDEPTH  | IMREAD_ANYCOLOR
 };
 
+/**
+ * Test lists for combination of IMREAD_*.
+ */
 const ImreadMixModes all_modes_Huge[] =
 {
     IMREAD_MIX_UNCHANGED,
@@ -83,18 +89,15 @@ void PrintTo(const ImreadMixModes& val, std::ostream* os)
     PrintTo( static_cast<ImreadModes>(val), os );
 }
 
-typedef tuple<string, int> mat_type_tuple;
-
 typedef tuple< uint64_t, tuple<string, int>, ImreadMixModes > Bufsize_and_Type;
 typedef testing::TestWithParam<Bufsize_and_Type> Imgcodecs_Tiff_decode_Huge;
 
 const uint64_t huge_buffer_sizes_decode[] =
 {
     (uint64_t)    1 * 1024 * 1024            ,
-    (uint64_t) 1024 * 1024 * 1024 - 32 * 1024,
+    (uint64_t) 1024 * 1024 * 1024 - 32768 * 4 * 2,
     (uint64_t) 1024 * 1024 * 1024            , // 1GB
-    (uint64_t) 2048 * 1024 * 1024            ,
-    (uint64_t) 4096 * 1024 * 1024 - 1        , // Maximum
+    (uint64_t) 2048 * 1024 * 1024            , // 2GB
 };
 
 const tuple<string, int> mat_types[] =
@@ -109,106 +112,137 @@ const tuple<string, int> mat_types[] =
 
 TEST_P(Imgcodecs_Tiff_decode_Huge, regression)
 {
+    // Get test parameters
     const uint64_t buffer_size   = get<0>(GetParam());
+    const string mat_type_string =   get<0>(get<1>(GetParam()));
+    const int mat_type           =   get<1>(get<1>(GetParam()));
+    const int imread_mode        = get<2>(GetParam());
 
-    const string mat_type_string = get<0>(get<1>(GetParam()));
-    const int mat_type           = get<1>(get<1>(GetParam()));
-
+    // Detect data file
     const string req_filename = cv::format("readwrite/huge-tiff/%s_%llu.tif", mat_type_string.c_str(), buffer_size);
     const string filename = findDataFile( req_filename );
 
-    const int imread_mode = get<2>(GetParam());
-
-    // Add Test tag.
+    // Preparation process for test
     {
+        // Convert from mat_type and buffer_size to tiff file information.
         const int width  = 32768;
-        int ncn    = CV_MAT_CN(mat_type);
-        int depth  = ( CV_MAT_DEPTH(mat_type) == CV_16U) ? 2 : 1;
-        const int height = (uint64_t)buffer_size / width / ncn / depth;
+        int ncn          = CV_MAT_CN(mat_type);
+        int depth        = ( CV_MAT_DEPTH(mat_type) == CV_16U) ? 2 : 1; // 16bit or 8 bit
+        const int height = (uint64_t) buffer_size / width / ncn / depth;
         const uint64_t base_scanline_size  = (uint64_t) width * ncn  * depth;
         const uint64_t base_strip_size     = (uint64_t) base_scanline_size * height;
 
-        const bool doReadScanline = ( base_strip_size >= 1024*1024*1024/100*95 );
+        // To avoid exception about pixel size, check it.
+        static const size_t CV_IO_MAX_IMAGE_PIXELS = utils::getConfigurationParameterSizeT("OPENCV_IO_MAX_IMAGE_PIXELS", 1 << 30);
+        uint64_t pixels = (uint64_t) width * height;
+        if ( pixels > CV_IO_MAX_IMAGE_PIXELS )
+        {
+            throw SkipTestException( cv::format("Test is skipped( pixels(%lu) > CV_IO_MAX_IMAGE_PIXELS(%lu) )",
+                pixels, CV_IO_MAX_IMAGE_PIXELS ) );
+        }
 
-        // Mat ( Destination Buffer )
+        // If buffer_size >= 1GB * 95%, TIFFReadScanline() is used.
+        const uint64_t BUFFER_SIZE_LIMIT_FOR_READS_CANLINE = (uint64_t) 1024*1024*1024*95/100;
+        const bool doReadScanline = ( base_strip_size >= BUFFER_SIZE_LIMIT_FOR_READS_CANLINE );
+
+        // Update ncn and depth for destination Mat.
         switch ( imread_mode )
         {
-            case IMREAD_UNCHANGED:  // -1
+            case IMREAD_UNCHANGED:
                 break;
-            case IMREAD_GRAYSCALE:  // 0
-                ncn = 1; depth = 1;
+            case IMREAD_GRAYSCALE:
+                ncn = 1;
+                depth = 1;
                 break;
-            case IMREAD_GRAYSCALE | IMREAD_ANYDEPTH: // 2
+            case IMREAD_GRAYSCALE | IMREAD_ANYDEPTH:
                 ncn = 1;
                 break;
-            case IMREAD_GRAYSCALE | IMREAD_ANYCOLOR: // 4
+            case IMREAD_GRAYSCALE | IMREAD_ANYCOLOR:
                 ncn = (ncn == 1)?1:3;
                 depth = 1;
                 break;
-            case IMREAD_GRAYSCALE | IMREAD_ANYCOLOR | IMREAD_ANYDEPTH: // 6
+            case IMREAD_GRAYSCALE | IMREAD_ANYCOLOR | IMREAD_ANYDEPTH:
                 ncn = (ncn == 1)?1:3;
                 break;
-            case IMREAD_COLOR: // 1
+            case IMREAD_COLOR:
                 ncn = 3;
                 depth = 1;
                 break;
-            case IMREAD_COLOR | IMREAD_ANYDEPTH: // 3
+            case IMREAD_COLOR | IMREAD_ANYDEPTH:
                 ncn = 3;
                 break;
-            case IMREAD_COLOR | IMREAD_ANYCOLOR: // 5
+            case IMREAD_COLOR | IMREAD_ANYCOLOR:
                 ncn = 3;
                 depth = 1;
                 break;
-            case IMREAD_COLOR | IMREAD_ANYDEPTH | IMREAD_ANYCOLOR: // 7
+            case IMREAD_COLOR | IMREAD_ANYDEPTH | IMREAD_ANYCOLOR:
                 ncn = 3;
                 break;
             default:
                 break;
         }
+
+        // Memory usage for Destination Mat
         const uint64_t memory_usage_cvmat = (uint64_t) width * ncn * depth * height;
 
-        // Memory usage in libtiff.
+        // Memory usage for Work memory in libtiff.
         uint64_t memory_usage_tiff = 0;
         if ( ( depth == 1 ) && ( !doReadScanline ) )
         {
-            // TIFFReadRGBA* functions
-            memory_usage_tiff = (uint64_t) width * 4 * 1 * height;
+            // TIFFReadRGBA*() request to allocate RGBA(32bit) buffer.
+            memory_usage_tiff = (uint64_t)
+                width *
+                4 *      // ncn     = RGBA
+                1 *      // dst_bpp = 8 bpp
+                height;
         }
         else
         {
-            // TIFFReadScanline function
-            // TIFFReadStip function
-            // libtiff allocate whole strip memory.
+            // TIFFReadEncodedStrip() or TIFFReadScanline() request to allocate strip memory.
             memory_usage_tiff = base_strip_size;
         }
 
-        // Memory usage in imgcodec/grfmt_tiff.cpp
-        const uint64_t memory_usage_work = ( doReadScanline )?base_scanline_size:base_strip_size;
+        // Memory usage for Work memory in imgcodec/grfmt_tiff.cpp
+        const uint64_t memory_usage_work =
+            ( doReadScanline ) ? base_scanline_size // for TIFFReadScanline()
+                               : base_strip_size;   // for TIFFReadRGBA*() or TIFFReadEncodedStrip()
 
         // Total memory usage.
-        const uint64_t memory_usage = memory_usage_cvmat + memory_usage_work + memory_usage_tiff;
+        const uint64_t memory_usage_total =
+            memory_usage_cvmat + // Destination Mat
+            memory_usage_tiff  + // Work memory in libtiff
+            memory_usage_work;   // Work memory in imgcodecs
 
+        // To avoid Out of memory exception, check it.
+        const uint64_t MEMORY_USAGE_LIMIT = (uint64_t) 4 * 1024 * 1024 * 1024; // 4GB
+        if ( memory_usage_total > MEMORY_USAGE_LIMIT )
+        {
+            throw SkipTestException( cv::format("Test is skipped ( memory_usage_total(%lu) > MEMORY_USAGE_LIMIT(%lu) )",
+                memory_usage_total, MEMORY_USAGE_LIMIT ) );
+        }
+
+        // Output memory usage log.
         CV_LOG_DEBUG(NULL, cv::format("OpenCV TIFF-test(line %d):memory usage info : mat(%llu), libtiff(%llu), work(%llu) -> total(%llu)",
-                     __LINE__, memory_usage_cvmat, memory_usage_tiff, memory_usage_work, memory_usage) );
+                     __LINE__, memory_usage_cvmat, memory_usage_tiff, memory_usage_work, memory_usage_total) );
 
-        // Each test is about 5-7sec, but this test case has many test(>200).
-        if ( memory_usage >= (uint64_t) 6144 * 1024 * 1024 )
+        // Add test tags.
+        if ( memory_usage_total >= (uint64_t) 6144 * 1024 * 1024 )
+        {
+            applyTestTag( CV_TEST_TAG_MEMORY_14GB, CV_TEST_TAG_VERYLONG );
+        }
+        else if ( memory_usage_total >= (uint64_t) 2048 * 1024 * 1024 )
         {
             applyTestTag( CV_TEST_TAG_MEMORY_6GB, CV_TEST_TAG_VERYLONG );
         }
-        else if ( memory_usage >= (uint64_t) 2048 * 1024 * 1024 )
-        {
-            applyTestTag( CV_TEST_TAG_MEMORY_6GB, CV_TEST_TAG_VERYLONG );
-        }
-        else if ( memory_usage >= (uint64_t) 1024  * 1024 * 1024 )
+        else if ( memory_usage_total >= (uint64_t) 1024  * 1024 * 1024 )
         {
             applyTestTag( CV_TEST_TAG_MEMORY_2GB, CV_TEST_TAG_LONG );
         }
-        else if ( memory_usage >= (uint64_t)  512  * 1024 * 1024 )
+        else if ( memory_usage_total >= (uint64_t)  512  * 1024 * 1024 )
         {
             applyTestTag( CV_TEST_TAG_MEMORY_1GB );
         }
-        else if ( memory_usage >= (uint64_t)  200  * 1024 * 1024 )
+        else if ( memory_usage_total >= (uint64_t)  200  * 1024 * 1024 )
         {
             applyTestTag( CV_TEST_TAG_MEMORY_512MB );
         }
@@ -218,37 +252,41 @@ TEST_P(Imgcodecs_Tiff_decode_Huge, regression)
         }
     }
 
+    // TEST Main
+
     cv::Mat img;
     ASSERT_NO_THROW( img = cv::imread(filename, imread_mode) );
     ASSERT_FALSE(img.empty());
 
     /**
-     * Test images contains the marker pixels at each corners.
+     * Test marker pixels at each corners.
      *
      *   0xAn,0x00 ... 0x00, 0xBn
      *   0x00,0x00 ... 0x00, 0x00
      *   :    :         :     :
      *   0x00,0x00 ... 0x00, 0x00
      *   0xCn,0x00 .., 0x00, 0xDn
+     *
      */
 
-# define MAT_COMBINE(file_type, mat_type) (((uint64_t)mat_type << 32 ) | file_type )
-    switch ( MAT_COMBINE(mat_type, img.type() )  )
+#define MAKE_FLAG(from_type, to_type) (((uint64_t)from_type << 32 ) | to_type )
+
+    switch ( MAKE_FLAG(mat_type, img.type() ) )
     {
     // GRAY TO GRAY
-    case MAT_COMBINE(CV_8UC1, CV_8UC1):
-    case MAT_COMBINE(CV_16UC1,CV_8UC1):
+    case MAKE_FLAG(CV_8UC1, CV_8UC1):
+    case MAKE_FLAG(CV_16UC1, CV_8UC1):
         EXPECT_EQ( 0xA0,   img.at<uchar>(0,          0)          );
         EXPECT_EQ( 0xB0,   img.at<uchar>(0,          img.cols-1) );
         EXPECT_EQ( 0xC0,   img.at<uchar>(img.rows-1, 0)          );
         EXPECT_EQ( 0xD0,   img.at<uchar>(img.rows-1, img.cols-1) );
         break;
 
-    // RGB/RGBA TO RGB ( IMREAD_COLOR )
-    case MAT_COMBINE(CV_8UC3, CV_8UC3):
-    case MAT_COMBINE(CV_8UC4, CV_8UC3): // IMREAD_COLOR
-    case MAT_COMBINE(CV_16UC3,CV_8UC3):
-    case MAT_COMBINE(CV_16UC4,CV_8UC3): // IMREAD_COLOR
+    // RGB/RGBA TO BGR
+    case MAKE_FLAG(CV_8UC3, CV_8UC3):
+    case MAKE_FLAG(CV_8UC4, CV_8UC3):
+    case MAKE_FLAG(CV_16UC3, CV_8UC3):
+    case MAKE_FLAG(CV_16UC4, CV_8UC3):
         EXPECT_EQ( 0xA2,   img.at<Vec3b>(0,          0)         [0] );
         EXPECT_EQ( 0xA1,   img.at<Vec3b>(0,          0)         [1] );
         EXPECT_EQ( 0xA0,   img.at<Vec3b>(0,          0)         [2] );
@@ -263,27 +301,32 @@ TEST_P(Imgcodecs_Tiff_decode_Huge, regression)
         EXPECT_EQ( 0xD0,   img.at<Vec3b>(img.rows-1, img.cols-1)[2] );
         break;
 
-    // RGBA TO RGBA
-    case MAT_COMBINE(CV_8UC4, CV_8UC4):
+    // RGBA TO BGRA
+    case MAKE_FLAG(CV_8UC4, CV_8UC4):
+    case MAKE_FLAG(CV_16UC4, CV_8UC4):
         EXPECT_EQ( 0xA2,   img.at<Vec4b>(0,          0)         [0] );
         EXPECT_EQ( 0xA1,   img.at<Vec4b>(0,          0)         [1] );
         EXPECT_EQ( 0xA0,   img.at<Vec4b>(0,          0)         [2] );
+        EXPECT_EQ( 0xA3,   img.at<Vec4b>(0,          0)         [3] );
         EXPECT_EQ( 0xB2,   img.at<Vec4b>(0,          img.cols-1)[0] );
         EXPECT_EQ( 0xB1,   img.at<Vec4b>(0,          img.cols-1)[1] );
         EXPECT_EQ( 0xB0,   img.at<Vec4b>(0,          img.cols-1)[2] );
+        EXPECT_EQ( 0xB3,   img.at<Vec4b>(0,          img.cols-1)[3] );
         EXPECT_EQ( 0xC2,   img.at<Vec4b>(img.rows-1, 0)         [0] );
         EXPECT_EQ( 0xC1,   img.at<Vec4b>(img.rows-1, 0)         [1] );
         EXPECT_EQ( 0xC0,   img.at<Vec4b>(img.rows-1, 0)         [2] );
+        EXPECT_EQ( 0xC3,   img.at<Vec4b>(img.rows-1, 0)         [3] );
         EXPECT_EQ( 0xD2,   img.at<Vec4b>(img.rows-1, img.cols-1)[0] );
         EXPECT_EQ( 0xD1,   img.at<Vec4b>(img.rows-1, img.cols-1)[1] );
         EXPECT_EQ( 0xD0,   img.at<Vec4b>(img.rows-1, img.cols-1)[2] );
+        EXPECT_EQ( 0xD3,   img.at<Vec4b>(img.rows-1, img.cols-1)[3] );
         break;
 
-    // RGB/RGBA to GRAY ( IMREAD_GRAY )
-    case MAT_COMBINE(CV_8UC3, CV_8UC1):
-    case MAT_COMBINE(CV_8UC4, CV_8UC1):
-    case MAT_COMBINE(CV_16UC3,CV_8UC1):
-    case MAT_COMBINE(CV_16UC4,CV_8UC1):
+    // RGB/RGBA to GRAY
+    case MAKE_FLAG(CV_8UC3, CV_8UC1):
+    case MAKE_FLAG(CV_8UC4, CV_8UC1):
+    case MAKE_FLAG(CV_16UC3, CV_8UC1):
+    case MAKE_FLAG(CV_16UC4, CV_8UC1):
         EXPECT_LE( 0xA0,   img.at<uchar>(0,          0)          );
         EXPECT_GE( 0xA2,   img.at<uchar>(0,          0)          );
         EXPECT_LE( 0xB0,   img.at<uchar>(0,          img.cols-1) );
@@ -294,9 +337,9 @@ TEST_P(Imgcodecs_Tiff_decode_Huge, regression)
         EXPECT_GE( 0xD2,   img.at<uchar>(img.rows-1, img.cols-1) );
         break;
 
-    // GRAY to RGB ( IMREAD_COLOR )
-    case MAT_COMBINE(CV_8UC1, CV_8UC3):
-    case MAT_COMBINE(CV_16UC1,CV_8UC3):
+    // GRAY to BGR
+    case MAKE_FLAG(CV_8UC1, CV_8UC3):
+    case MAKE_FLAG(CV_16UC1, CV_8UC3):
         EXPECT_EQ( 0xA0,   img.at<Vec3b>(0,          0)         [0] );
         EXPECT_EQ( 0xB0,   img.at<Vec3b>(0,          img.cols-1)[0] );
         EXPECT_EQ( 0xC0,   img.at<Vec3b>(img.rows-1, 0)         [0] );
@@ -313,65 +356,69 @@ TEST_P(Imgcodecs_Tiff_decode_Huge, regression)
         break;
 
     // GRAY TO GRAY
-    case MAT_COMBINE(CV_16UC1, CV_16UC1):
-        EXPECT_EQ( 0xA0A0, img.at<ushort>(0,          0)          );
-        EXPECT_EQ( 0xB0B0, img.at<ushort>(0,          img.cols-1) );
-        EXPECT_EQ( 0xC0C0, img.at<ushort>(img.rows-1, 0)          );
-        EXPECT_EQ( 0xD0D0, img.at<ushort>(img.rows-1, img.cols-1) );
+    case MAKE_FLAG(CV_16UC1, CV_16UC1):
+        EXPECT_EQ( 0xA090, img.at<ushort>(0,          0)          );
+        EXPECT_EQ( 0xB080, img.at<ushort>(0,          img.cols-1) );
+        EXPECT_EQ( 0xC070, img.at<ushort>(img.rows-1, 0)          );
+        EXPECT_EQ( 0xD060, img.at<ushort>(img.rows-1, img.cols-1) );
         break;
 
-    // RGB/RGBA TO RGB
-    case MAT_COMBINE(CV_16UC3, CV_16UC3):
-    case MAT_COMBINE(CV_16UC4, CV_16UC3):
-        EXPECT_EQ( 0xA2A2, img.at<Vec3w>(0,          0)         [0] );
-        EXPECT_EQ( 0xA1A1, img.at<Vec3w>(0,          0)         [1] );
-        EXPECT_EQ( 0xA0A0, img.at<Vec3w>(0,          0)         [2] );
-        EXPECT_EQ( 0xB2B2, img.at<Vec3w>(0,          img.cols-1)[0] );
-        EXPECT_EQ( 0xB1B1, img.at<Vec3w>(0,          img.cols-1)[1] );
-        EXPECT_EQ( 0xB0B0, img.at<Vec3w>(0,          img.cols-1)[2] );
-        EXPECT_EQ( 0xC2C2, img.at<Vec3w>(img.rows-1, 0)         [0] );
-        EXPECT_EQ( 0xC1C1, img.at<Vec3w>(img.rows-1, 0)         [1] );
-        EXPECT_EQ( 0xC0C0, img.at<Vec3w>(img.rows-1, 0)         [2] );
-        EXPECT_EQ( 0xD2D2, img.at<Vec3w>(img.rows-1, img.cols-1)[0] );
-        EXPECT_EQ( 0xD1D1, img.at<Vec3w>(img.rows-1, img.cols-1)[1] );
-        EXPECT_EQ( 0xD0D0, img.at<Vec3w>(img.rows-1, img.cols-1)[2] );
+    // RGB/RGBA TO BGR
+    case MAKE_FLAG(CV_16UC3, CV_16UC3):
+    case MAKE_FLAG(CV_16UC4, CV_16UC3):
+        EXPECT_EQ( 0xA292, img.at<Vec3w>(0,          0)         [0] );
+        EXPECT_EQ( 0xA191, img.at<Vec3w>(0,          0)         [1] );
+        EXPECT_EQ( 0xA090, img.at<Vec3w>(0,          0)         [2] );
+        EXPECT_EQ( 0xB282, img.at<Vec3w>(0,          img.cols-1)[0] );
+        EXPECT_EQ( 0xB181, img.at<Vec3w>(0,          img.cols-1)[1] );
+        EXPECT_EQ( 0xB080, img.at<Vec3w>(0,          img.cols-1)[2] );
+        EXPECT_EQ( 0xC272, img.at<Vec3w>(img.rows-1, 0)         [0] );
+        EXPECT_EQ( 0xC171, img.at<Vec3w>(img.rows-1, 0)         [1] );
+        EXPECT_EQ( 0xC070, img.at<Vec3w>(img.rows-1, 0)         [2] );
+        EXPECT_EQ( 0xD262, img.at<Vec3w>(img.rows-1, img.cols-1)[0] );
+        EXPECT_EQ( 0xD161, img.at<Vec3w>(img.rows-1, img.cols-1)[1] );
+        EXPECT_EQ( 0xD060, img.at<Vec3w>(img.rows-1, img.cols-1)[2] );
         break;
 
     // RGBA TO RGBA
-    case MAT_COMBINE(CV_16UC4, CV_16UC4):
-        EXPECT_EQ( 0xA2A2, img.at<Vec4w>(0,          0)         [0] );
-        EXPECT_EQ( 0xA1A1, img.at<Vec4w>(0,          0)         [1] );
-        EXPECT_EQ( 0xA0A0, img.at<Vec4w>(0,          0)         [2] );
-        EXPECT_EQ( 0xB2B2, img.at<Vec4w>(0,          img.cols-1)[0] );
-        EXPECT_EQ( 0xB1B1, img.at<Vec4w>(0,          img.cols-1)[1] );
-        EXPECT_EQ( 0xB0B0, img.at<Vec4w>(0,          img.cols-1)[2] );
-        EXPECT_EQ( 0xC2C2, img.at<Vec4w>(img.rows-1, 0)         [0] );
-        EXPECT_EQ( 0xC1C1, img.at<Vec4w>(img.rows-1, 0)         [1] );
-        EXPECT_EQ( 0xC0C0, img.at<Vec4w>(img.rows-1, 0)         [2] );
-        EXPECT_EQ( 0xD2D2, img.at<Vec4w>(img.rows-1,img.cols-1) [0] );
-        EXPECT_EQ( 0xD1D1, img.at<Vec4w>(img.rows-1,img.cols-1) [1] );
-        EXPECT_EQ( 0xD0D0, img.at<Vec4w>(img.rows-1,img.cols-1) [2] );
+    case MAKE_FLAG(CV_16UC4, CV_16UC4):
+        EXPECT_EQ( 0xA292, img.at<Vec4w>(0,          0)         [0] );
+        EXPECT_EQ( 0xA191, img.at<Vec4w>(0,          0)         [1] );
+        EXPECT_EQ( 0xA090, img.at<Vec4w>(0,          0)         [2] );
+        EXPECT_EQ( 0xA393, img.at<Vec4w>(0,          0)         [3] );
+        EXPECT_EQ( 0xB282, img.at<Vec4w>(0,          img.cols-1)[0] );
+        EXPECT_EQ( 0xB181, img.at<Vec4w>(0,          img.cols-1)[1] );
+        EXPECT_EQ( 0xB080, img.at<Vec4w>(0,          img.cols-1)[2] );
+        EXPECT_EQ( 0xB383, img.at<Vec4w>(0,          img.cols-1)[3] );
+        EXPECT_EQ( 0xC272, img.at<Vec4w>(img.rows-1, 0)         [0] );
+        EXPECT_EQ( 0xC171, img.at<Vec4w>(img.rows-1, 0)         [1] );
+        EXPECT_EQ( 0xC070, img.at<Vec4w>(img.rows-1, 0)         [2] );
+        EXPECT_EQ( 0xC373, img.at<Vec4w>(img.rows-1, 0)         [3] );
+        EXPECT_EQ( 0xD262, img.at<Vec4w>(img.rows-1,img.cols-1) [0] );
+        EXPECT_EQ( 0xD161, img.at<Vec4w>(img.rows-1,img.cols-1) [1] );
+        EXPECT_EQ( 0xD060, img.at<Vec4w>(img.rows-1,img.cols-1) [2] );
+        EXPECT_EQ( 0xD363, img.at<Vec4w>(img.rows-1,img.cols-1) [3] );
         break;
 
-    // RGB/RGBA to GRAY ( IMREAD_GRAYSCALE )
-    case MAT_COMBINE(CV_16UC3, CV_16UC1):
-    case MAT_COMBINE(CV_16UC4, CV_16UC1):
-        EXPECT_LE( 0xA0A0, img.at<ushort>(0,          0) );
-        EXPECT_GE( 0xA2A2, img.at<ushort>(0,          0) );
-        EXPECT_LE( 0xB0B0, img.at<ushort>(0,          img.cols-1) );
-        EXPECT_GE( 0xB2B2, img.at<ushort>(0,          img.cols-1) );
-        EXPECT_LE( 0xC0C0, img.at<ushort>(img.rows-1, 0) );
-        EXPECT_GE( 0xC2C2, img.at<ushort>(img.rows-1, 0) );
-        EXPECT_LE( 0xD0D0, img.at<ushort>(img.rows-1, img.cols-1) );
-        EXPECT_GE( 0xD2D2, img.at<ushort>(img.rows-1, img.cols-1) );
+    // RGB/RGBA to GRAY
+    case MAKE_FLAG(CV_16UC3, CV_16UC1):
+    case MAKE_FLAG(CV_16UC4, CV_16UC1):
+        EXPECT_LE( 0xA090, img.at<ushort>(0,          0) );
+        EXPECT_GE( 0xA292, img.at<ushort>(0,          0) );
+        EXPECT_LE( 0xB080, img.at<ushort>(0,          img.cols-1) );
+        EXPECT_GE( 0xB282, img.at<ushort>(0,          img.cols-1) );
+        EXPECT_LE( 0xC070, img.at<ushort>(img.rows-1, 0) );
+        EXPECT_GE( 0xC272, img.at<ushort>(img.rows-1, 0) );
+        EXPECT_LE( 0xD060, img.at<ushort>(img.rows-1, img.cols-1) );
+        EXPECT_GE( 0xD262, img.at<ushort>(img.rows-1, img.cols-1) );
         break;
 
-    // GRAY to RGB ( IMREAD_COLOR )
-    case MAT_COMBINE(CV_16UC1, CV_16UC3):
-        EXPECT_EQ( 0xA0A0,   img.at<Vec3w>(0,          0)         [0] );
-        EXPECT_EQ( 0xB0B0,   img.at<Vec3w>(0,          img.cols-1)[0] );
-        EXPECT_EQ( 0xC0C0,   img.at<Vec3w>(img.rows-1, 0)         [0] );
-        EXPECT_EQ( 0xD0D0,   img.at<Vec3w>(img.rows-1, img.cols-1)[0] );
+    // GRAY to RGB
+    case MAKE_FLAG(CV_16UC1, CV_16UC3):
+        EXPECT_EQ( 0xA090,   img.at<Vec3w>(0,          0)         [0] );
+        EXPECT_EQ( 0xB080,   img.at<Vec3w>(0,          img.cols-1)[0] );
+        EXPECT_EQ( 0xC070,   img.at<Vec3w>(img.rows-1, 0)         [0] );
+        EXPECT_EQ( 0xD060,   img.at<Vec3w>(img.rows-1, img.cols-1)[0] );
         // R==G==B
         EXPECT_EQ( img.at<Vec3w>(0,          0)          [0], img.at<Vec3w>(0,          0)         [1] );
         EXPECT_EQ( img.at<Vec3w>(0,          0)          [0], img.at<Vec3w>(0,          0)         [2] );
@@ -384,29 +431,31 @@ TEST_P(Imgcodecs_Tiff_decode_Huge, regression)
         break;
 
     // No supported.
-    // (1) 8bit to 16bi
-    case MAT_COMBINE(CV_8UC1,  CV_16UC1):
-    case MAT_COMBINE(CV_8UC1,  CV_16UC3):
-    case MAT_COMBINE(CV_8UC1,  CV_16UC4):
-    case MAT_COMBINE(CV_8UC3,  CV_16UC1):
-    case MAT_COMBINE(CV_8UC3,  CV_16UC3):
-    case MAT_COMBINE(CV_8UC3,  CV_16UC4):
-    case MAT_COMBINE(CV_8UC4,  CV_16UC1):
-    case MAT_COMBINE(CV_8UC4,  CV_16UC3):
-    case MAT_COMBINE(CV_8UC4,  CV_16UC4):
+    // (1) 8bit to 16bit
+    case MAKE_FLAG(CV_8UC1, CV_16UC1):
+    case MAKE_FLAG(CV_8UC1, CV_16UC3):
+    case MAKE_FLAG(CV_8UC1, CV_16UC4):
+    case MAKE_FLAG(CV_8UC3, CV_16UC1):
+    case MAKE_FLAG(CV_8UC3, CV_16UC3):
+    case MAKE_FLAG(CV_8UC3, CV_16UC4):
+    case MAKE_FLAG(CV_8UC4, CV_16UC1):
+    case MAKE_FLAG(CV_8UC4, CV_16UC3):
+    case MAKE_FLAG(CV_8UC4, CV_16UC4):
     // (2) GRAY/RGB TO RGBA
-    case MAT_COMBINE(CV_8UC1,  CV_8UC4):
-    case MAT_COMBINE(CV_8UC3,  CV_8UC4):
-    case MAT_COMBINE(CV_16UC1, CV_8UC4):
-    case MAT_COMBINE(CV_16UC3, CV_16UC4):
+    case MAKE_FLAG(CV_8UC1, CV_8UC4):
+    case MAKE_FLAG(CV_8UC3, CV_8UC4):
+    case MAKE_FLAG(CV_16UC1, CV_8UC4):
+    case MAKE_FLAG(CV_16UC3, CV_8UC4):
+    case MAKE_FLAG(CV_16UC1, CV_16UC4):
+    case MAKE_FLAG(CV_16UC3, CV_16UC4):
     default:
-        FAIL() << cv::format("mat_type = %d ( %d, %d) img.type = %d ( %d, %d )",
+        FAIL() << cv::format("Unknown test pattern: from = %d ( %d, %d) to = %d ( %d, %d )",
                               mat_type,   (int)CV_MAT_CN(mat_type   ), ( CV_MAT_DEPTH(mat_type   )==CV_16U)?16:8,
                               img.type(), (int)CV_MAT_CN(img.type() ), ( CV_MAT_DEPTH(img.type() )==CV_16U)?16:8);
         break;
     }
 
-    SUCCEED();
+#undef MAKE_FLAG
 }
 
 INSTANTIATE_TEST_CASE_P(Imgcodecs_Tiff, Imgcodecs_Tiff_decode_Huge,
