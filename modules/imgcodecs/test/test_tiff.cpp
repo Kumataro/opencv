@@ -213,17 +213,17 @@ TEST_P(Imgcodecs_Tiff_decode_Huge, regression)
             memory_usage_tiff  + // Work memory in libtiff
             memory_usage_work;   // Work memory in imgcodecs
 
-        // To avoid Out of memory exception, check it.
-        const uint64_t MEMORY_USAGE_LIMIT = (uint64_t) 4 * 1024 * 1024 * 1024; // 4GB
-        if ( memory_usage_total > MEMORY_USAGE_LIMIT )
-        {
-            throw SkipTestException( cv::format("Test is skipped ( memory_usage_total(%lu) > MEMORY_USAGE_LIMIT(%lu) )",
-                memory_usage_total, MEMORY_USAGE_LIMIT ) );
-        }
-
         // Output memory usage log.
         CV_LOG_DEBUG(NULL, cv::format("OpenCV TIFF-test(line %d):memory usage info : mat(%llu), libtiff(%llu), work(%llu) -> total(%llu)",
                      __LINE__, memory_usage_cvmat, memory_usage_tiff, memory_usage_work, memory_usage_total) );
+
+        // To avoid Out of memory exception, check it.
+        const uint64_t MEMORY_USAGE_LIMIT = (uint64_t) 4096 * 1024 * 1024; // 4GB
+        if ( memory_usage_total > MEMORY_USAGE_LIMIT )
+        {
+            throw SkipTestException( cv::format("Test is skipped ( memory_usage_total(%llu) > MEMORY_USAGE_LIMIT(%llu) )",
+                memory_usage_total, MEMORY_USAGE_LIMIT ) );
+        }
 
         // Add test tags.
         if ( memory_usage_total >= (uint64_t) 6144 * 1024 * 1024 )
