@@ -41,6 +41,7 @@
 //M*/
 
 #include "precomp.hpp"
+#include <opencv2/core/utils/configuration.private.hpp>
 
 #ifdef HAVE_PNG
 
@@ -176,6 +177,20 @@ bool  PngDecoder::readHeader()
                     png_bytep trans;
                     png_color_16p trans_values;
 
+                    /**
+                     * Work around for https://github.com/opencv/opencv/issues/22551
+                     * Some PNG image has too large chunks. But libpng has no way to skip it.
+                     * To read them, we relax chunk length limitation.
+                     * (png_set_chunk_malloc_max() is supported after libpng-1.4.1).
+                     */
+
+#if defined( PNG_SET_USER_LIMITS_SUPPORTED )
+#  if ( PNG_LIBPNG_VER_MAJOR*10000 + PNG_LIBPNG_VER_MINOR*100 + PNG_LIBPNG_VER_RELEASE >= 10401)
+                    static const size_t CV_IO_MAX_PNG_USER_CHUNK_MALLOC = utils::getConfigurationParameterSizeT(
+                        "OPENCV_IO_MAX_PNG_USER_CHUNK_MALLOC", png_get_chunk_malloc_max(png_ptr) );
+                    png_set_chunk_malloc_max(png_ptr, static_cast<png_alloc_size_t>(CV_IO_MAX_PNG_USER_CHUNK_MALLOC) );
+#  endif
+#endif
                     png_read_info( png_ptr, info_ptr );
 
                     png_get_IHDR( png_ptr, info_ptr, &wdth, &hght,

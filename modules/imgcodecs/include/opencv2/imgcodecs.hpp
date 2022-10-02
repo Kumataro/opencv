@@ -192,6 +192,9 @@ Currently, the following file formats are supported:
     or @ref IMREAD_UNCHANGED are passed.
 -   By default number of pixels must be less than 2^30. Limit can be set using system
     variable OPENCV_IO_MAX_IMAGE_PIXELS
+-   By default chunk length limitation for png image must be equal or less than PNG_USER_CHUNK_MALLOC_MAX
+    (typically 8,000,000). Limit can be set using system variable OPENCV_IO_MAX_PNG_USER_CHUNK_MALLOC.
+    It requests libpng 1.4.1 or newer with PNG_SET_USER_LIMITS_SUPPORTED.
 
 @param filename Name of file to be loaded.
 @param flags Flag that can take values of cv::ImreadModes
