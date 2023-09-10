@@ -1969,11 +1969,40 @@ inline v_int32x4 v_round(const v_float32x4& a)
 #else
 inline v_int32x4 v_round(const v_float32x4& a)
 {
-    static const int32x4_t v_sign = vdupq_n_s32(1 << 31),
-        v_05 = vreinterpretq_s32_f32(vdupq_n_f32(0.5f));
+    /*
+     * input is {+2.5, -1.5, +3.5, -0.5}
+     *  ret_sings = { +1, -1, +1, -1 }       : (val<0)?-1:+1
+     *
+     *   val_abs   = { 2.5, 1.5, 3.5, 0.5 }  : abs(input)
+     *   round     = { 3,   2,   4,   1   }  : florr( val_abs + 0.5 )
+     *   isOdd     = { 1,   0,   0,   0   }  : round & 0x1
+     *   isFrac    = { 1,   1,   1,   1   }  : (round - val_abs) == 0.5
+     *  ret_abs   = {  2,  2,  4,  0 }
+     * output is { +2, -2, +4, 0 }
+     */
 
-    int32x4_t v_addition = vorrq_s32(v_05, vandq_s32(v_sign, vreinterpretq_s32_f32(a.val)));
-    return v_int32x4(vcvtq_s32_f32(vaddq_f32(a.val, vreinterpretq_f32_s32(v_addition))));
+    static const float32x4_t f32_v0_0  = vdupq_n_f32(0.0);
+    static const int32x4_t   s32_v1_0  = vdupq_n_s32(1);
+    static const int32x4_t   s32_vM1_0 = vdupq_n_s32(-1);
+
+    static const float32x4_t f32_v0_5  = vdupq_n_f32(0.5);
+    static const uint32x4_t  u32_v1_0  = vdupq_n_u32(1);
+
+    const int32x4_t isNegative = vreinterpretq_s32_u32( vcleq_f32( a.val, f32_v0_0 ) );
+    const int32x4_t ret_signs = vorrq_s32(
+        vandq_s32( s32_vM1_0, isNegative ),
+        vbicq_s32( s32_v1_0,  isNegative )  // it means Positive
+    );
+
+    const float32x4_t val_abs = vabsq_f32( a.val );
+    const uint32x4_t round = vcvtq_u32_f32( vaddq_f32( val_abs, f32_v0_5 ) );
+    const uint32x4_t isOdd = vandq_u32( round, u32_v1_0 );
+    const uint32x4_t isFrac0_5 = vceqq_f32(vsubq_f32(vcvtq_f32_u32(round), val_abs), f32_v0_5 );
+    const int32x4_t ret_abs = vreinterpretq_s32_u32( vsubq_u32( round, vandq_u32( isOdd, isFrac0_5 ) ) );
+
+    const int32x4_t ret = vmulq_s32( ret_abs, ret_signs );
+
+    return v_int32x4(ret);
 }
 #endif
 inline v_int32x4 v_floor(const v_float32x4& a)
