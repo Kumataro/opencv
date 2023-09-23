@@ -47,6 +47,7 @@
 #include "grfmts.hpp"
 #include "utils.hpp"
 #include "exif.hpp"
+#include "lcms2_helper.hpp"
 #undef min
 #undef max
 #include <iostream>
@@ -55,8 +56,6 @@
 #include <opencv2/core/utils/logger.hpp>
 #include <opencv2/core/utils/configuration.private.hpp>
 #include <opencv2/imgcodecs.hpp>
-
-
 
 /****************************************************************************************\
 *                                      Image Codecs                                      *
@@ -383,6 +382,13 @@ static void ApplyExifOrientation(ExifEntry_t orientationTag, Mat& img)
     }
 }
 
+#ifdef HAVE_IMGCODEC_LCMS2
+static void ApplyIccProfile(std::vector<unsigned char> iccProfile, Mat& img)
+{
+    transformWithIccProfile( iccProfile, img );
+}
+#endif // HAVE_IMGCODEC_LCMS2
+
 /**
  * Read an image into memory and return the information
  *
@@ -486,6 +492,13 @@ imread_( const String& filename, int flags, Mat& mat )
         mat.release();
         return false;
     }
+
+#ifdef HAVE_IMGCODEC_LCMS2
+    if (!mat.empty() && (flags & IMREAD_IGNORE_TRANSFORM_ICC) == 0 )
+    {
+        ApplyIccProfile(decoder->getIccProfile(), mat);
+    }
+#endif // HAVE_IMGCODEC_LCMS2
 
     if( decoder->setScale( scale_denom ) > 1 ) // if decoder is JpegDecoder then decoder->setScale always returns 1
     {
@@ -599,6 +612,13 @@ imreadmulti_(const String& filename, int flags, std::vector<Mat>& mats, int star
         }
         if (!success)
             break;
+
+#ifdef HAVE_IMGCODEC_LCMS2
+        if (!mat.empty())
+        {
+            ApplyIccProfile(decoder->getIccProfile(), mat);
+        }
+#endif // HAVE_IMGCODEC_LCMS2
 
         // optionally rotate the data if EXIF' orientation flag says so
         if ((flags & IMREAD_IGNORE_ORIENTATION) == 0 && flags != IMREAD_UNCHANGED)

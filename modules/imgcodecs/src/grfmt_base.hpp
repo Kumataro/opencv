@@ -66,6 +66,7 @@ public:
     int height() const { return m_height; }
     virtual int type() const { return m_type; }
 
+    std::vector<unsigned char> getIccProfile() const { return m_icc; }
     ExifEntry_t getExifTag(const ExifTagName tag) const;
     virtual bool setSource( const String& filename );
     virtual bool setSource( const Mat& buf );
@@ -90,6 +91,7 @@ protected:
     Mat m_buf;
     bool m_buf_supported;
     ExifReader m_exif;
+    std::vector<unsigned char> m_icc;
 };
 
 

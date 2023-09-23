@@ -88,6 +88,16 @@ extern "C" {
   #undef CV_MANUAL_JPEG_STD_HUFF_TABLES
 #endif
 
+#ifdef HAVE_IMGCODEC_LCMS2
+  #if defined(LIBJPEG_TURBO_VERSION_NUMBER) && LIBJPEG_TURBO_VERSION_NUMBER >= 2000000
+    #define HAS_JPEG_READ_ICC_PROFILE
+  #else
+    #undef HAS_JPEG_READ_ICC_PROFILE
+  #endif
+#else
+    #undef HAS_JPEG_READ_ICC_PROFILE
+#endif
+
 namespace cv
 {
 
@@ -247,6 +257,9 @@ bool  JpegDecoder::readHeader()
         if (state->cinfo.src != 0)
         {
             jpeg_save_markers(&state->cinfo, APP1, 0xffff);
+#ifdef HAS_JPEG_READ_ICC_PROFILE
+            jpeg_save_markers(&state->cinfo, APP2, 0xffff);
+#endif // HAS_JPEG_READ_ICC_PROFILE
             jpeg_read_header( &state->cinfo, TRUE );
 
             state->cinfo.scale_num=1;
@@ -503,6 +516,19 @@ bool  JpegDecoder::readData( Mat& img )
                         icvCvt_CMYK2Gray_8u_C4C1R( buffer[0], 0, data, 0, Size(m_width,1) );
                 }
             }
+
+#ifdef HAS_JPEG_READ_ICC_PROFILE
+            {
+                unsigned char *icc_data = NULL;
+                unsigned int icc_len;
+                if ( jpeg_read_icc_profile( cinfo, &icc_data, &icc_len ) )
+                {
+                    m_icc.resize( icc_len );
+                    memcpy( m_icc.data(), icc_data, icc_len );
+                    free( icc_data );
+                }
+            }
+#endif // HAS_JPEG_READ_ICC_PROFILE
 
             result = true;
             jpeg_finish_decompress( cinfo );

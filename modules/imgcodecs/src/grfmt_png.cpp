@@ -297,6 +297,24 @@ bool  PngDecoder::readData( Mat& img )
             }
 #endif
 
+#if defined(PNG_iCCP_SUPPORTED) && defined(HAVE_IMGCODEC_LCMS2)
+            png_charp   name;
+            int         comp_type;
+            png_bytep   icc_body;
+            png_uint_32 icc_len = 0;
+            // iCCP info could be in info_ptr (intro_info) or end_info per specification
+            if( png_get_valid(png_ptr, info_ptr, PNG_INFO_iCCP) )
+                png_get_iCCP(png_ptr, info_ptr, &name, &comp_type, &icc_body, &icc_len);
+            else if( png_get_valid(png_ptr, end_info, PNG_INFO_iCCP) )
+                png_get_iCCP(png_ptr, end_info, &name, &comp_type, &icc_body, &icc_len);
+
+            if ( icc_len > 0 )
+            {
+                m_icc.resize( icc_len );
+                memcpy( m_icc.data(), icc_body, icc_len );
+            }
+#endif // defined(PNG_iCCP_SUPPORTED) && defined(HAVE_IMGCODEC_LCMS2)
+
             result = true;
         }
     }

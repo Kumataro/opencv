@@ -88,6 +88,12 @@ if(HAVE_GDAL)
   list(APPEND GRFMT_LIBS ${GDAL_LIBRARY})
 endif()
 
+if(HAVE_LCMS2)
+  ocv_include_directories(${LCMS2_INCLUDE_DIRS})
+  list(APPEND GRFMT_LIBS ${LCMS2_LIBRARIES})
+  add_definitions(-DHAVE_IMGCODEC_LCMS2)
+endif()
+
 if(HAVE_IMGCODEC_HDR)
   add_definitions(-DHAVE_IMGCODEC_HDR)
 endif()
@@ -113,6 +119,11 @@ list(APPEND grfmt_hdrs ${CMAKE_CURRENT_LIST_DIR}/src/rgbe.hpp)
 list(APPEND grfmt_srcs ${CMAKE_CURRENT_LIST_DIR}/src/rgbe.cpp)
 list(APPEND grfmt_hdrs ${CMAKE_CURRENT_LIST_DIR}/src/exif.hpp)
 list(APPEND grfmt_srcs ${CMAKE_CURRENT_LIST_DIR}/src/exif.cpp)
+
+if(HAVE_LCMS2)
+    list(APPEND grfmt_hdrs ${CMAKE_CURRENT_LIST_DIR}/src/lcms2_helper.hpp)
+    list(APPEND grfmt_srcs ${CMAKE_CURRENT_LIST_DIR}/src/lcms2_helper.cpp)
+endif()
 
 source_group("Src\\grfmts" FILES ${grfmt_hdrs} ${grfmt_srcs})
 
