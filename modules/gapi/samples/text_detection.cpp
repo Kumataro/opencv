@@ -559,7 +559,7 @@ void drawRotatedRect(cv::Mat &m, const cv::RotatedRect &rc) {
     tmp_points[4] = tmp_points[0];
     auto prev = tmp_points.begin(), it = prev+1;
     for (; it != tmp_points.end(); ++it) {
-        cv::line(m, *prev, *it, cv::Scalar(50, 205, 50), 2);
+        cv::line(m, static_cast<cv::Point>(*prev), static_cast<cv::Point>(*it), cv::Scalar(50, 205, 50), 2);
         prev = it;
     }
 }
@@ -574,7 +574,7 @@ void drawText(cv::Mat &m, const cv::RotatedRect &rc, const std::string &str) {
     std::vector<cv::Point2f> tmp_points(4);
     rc.points(tmp_points.data());
     const auto tl_point_idx = custom::OCVCropLabels::topLeftPointIdx(tmp_points);
-    cv::Point text_pos = tmp_points[tl_point_idx];
+    cv::Point text_pos = static_cast<cv::Point>(tmp_points[tl_point_idx]);
     text_pos.x = std::max(0, text_pos.x);
     text_pos.y = std::max(text_size.height, text_pos.y);
 

@@ -81,13 +81,13 @@ void CV_FastTest::run( int )
     for(size_t i = 0; i < keypoints1.size(); ++i)
     {
         const KeyPoint& kp = keypoints1[i];
-        cv::circle(image1, kp.pt, cvRound(kp.size/2), Scalar(255, 0, 0));
+        cv::circle(image1, static_cast<cv::Point>(kp.pt), cvRound(kp.size/2), Scalar(255, 0, 0));
     }
 
     for(size_t i = 0; i < keypoints2.size(); ++i)
     {
         const KeyPoint& kp = keypoints2[i];
-        cv::circle(image2, kp.pt, cvRound(kp.size/2), Scalar(255, 0, 0));
+        cv::circle(image2, static_cast<cv::Point>(kp.pt), cvRound(kp.size/2), Scalar(255, 0, 0));
     }
 
     Mat kps1(1, (int)(keypoints1.size() * sizeof(KeyPoint)), CV_8U, &keypoints1[0]);

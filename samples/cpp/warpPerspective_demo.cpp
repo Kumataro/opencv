@@ -75,13 +75,13 @@ int main(int argc, char** argv)
 
             for (size_t i = 0; i < roi_corners.size(); ++i)
             {
-                circle( image, roi_corners[i], 5, Scalar(0, 255, 0), 3 );
+                circle( image, static_cast<cv::Point>(roi_corners[i]), 5, Scalar(0, 255, 0), 3 );
 
                 if( i > 0 )
                 {
-                    line(image, roi_corners[i-1], roi_corners[(i)], Scalar(0, 0, 255), 2);
-                    circle(image, roi_corners[i], 5, Scalar(0, 255, 0), 3);
-                    putText(image, labels[i].c_str(), roi_corners[i], FONT_HERSHEY_SIMPLEX, 0.8, Scalar(255, 0, 0), 2);
+                    line(image, static_cast<cv::Point>(roi_corners[i-1]), static_cast<cv::Point>(roi_corners[(i)]), Scalar(0, 0, 255), 2);
+                    circle(image, static_cast<cv::Point>(roi_corners[i]), 5, Scalar(0, 255, 0), 3);
+                    putText(image, labels[i].c_str(), static_cast<cv::Point>(roi_corners[i]), FONT_HERSHEY_SIMPLEX, 0.8, Scalar(255, 0, 0), 2);
                 }
             }
             imshow( windowTitle, image );
@@ -92,9 +92,9 @@ int main(int argc, char** argv)
             image = original_image.clone();
             for ( int i = 0; i < 4; ++i )
             {
-                line(image, roi_corners[i], roi_corners[(i + 1) % 4], Scalar(0, 0, 255), 2);
-                circle(image, roi_corners[i], 5, Scalar(0, 255, 0), 3);
-                putText(image, labels[i].c_str(), roi_corners[i], FONT_HERSHEY_SIMPLEX, 0.8, Scalar(255, 0, 0), 2);
+                line(image, static_cast<cv::Point>(roi_corners[i]), static_cast<cv::Point>(roi_corners[(i + 1) % 4]), Scalar(0, 0, 255), 2);
+                circle(image, static_cast<cv::Point>(roi_corners[i]), 5, Scalar(0, 255, 0), 3);
+                putText(image, labels[i].c_str(), static_cast<cv::Point>(roi_corners[i]), FONT_HERSHEY_SIMPLEX, 0.8, Scalar(255, 0, 0), 2);
             }
 
             imshow( windowTitle, image );

@@ -1246,7 +1246,7 @@ TEST_P(SqrtTest, AccuracyTest)
 TEST_P(WarpPerspectiveTest, AccuracyTest)
 {
     cv::Point center{in_mat1.size() / 2};
-    cv::Mat xy = cv::getRotationMatrix2D(center, angle, scale);
+    cv::Mat xy = cv::getRotationMatrix2D(static_cast<cv::Point2f>(center), angle, scale);
     cv::Matx13d z (0, 0, 1);
     cv::Mat transform_mat;
     cv::vconcat(xy, z, transform_mat);
@@ -1270,7 +1270,7 @@ TEST_P(WarpPerspectiveTest, AccuracyTest)
 TEST_P(WarpAffineTest, AccuracyTest)
 {
     cv::Point center{in_mat1.size() / 2};
-    cv::Mat warp_mat = cv::getRotationMatrix2D(center, angle, scale);
+    cv::Mat warp_mat = cv::getRotationMatrix2D(static_cast<cv::Point2f>(center), angle, scale);
 
     // G-API code //////////////////////////////////////////////////////////////
     cv::GMat in;

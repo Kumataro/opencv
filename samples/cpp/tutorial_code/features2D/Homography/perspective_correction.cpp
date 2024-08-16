@@ -58,7 +58,7 @@ void perspectiveCorrection(const string &img1Path, const string &img2Path, const
         pt2 /= pt2.at<double>(2);
 
         Point end( (int) (img1.cols + pt2.at<double>(0)), (int) pt2.at<double>(1) );
-        line(img_draw_matches, corners1[i], end, randomColor(rng), 2);
+        line(img_draw_matches, static_cast<cv::Point>(corners1[i]), end, randomColor(rng), 2);
     }
 
     imshow("Draw matches", img_draw_matches);

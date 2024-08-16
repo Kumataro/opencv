@@ -411,9 +411,9 @@ void QRDetect::fixationPoints(vector<Point2f> &local_point)
         list_area_pnt.push_back(current_point);
 
         vector<LineIterator> list_line_iter;
-        list_line_iter.push_back(LineIterator(bin_barcode, current_point, left_point));
-        list_line_iter.push_back(LineIterator(bin_barcode, current_point, central_point));
-        list_line_iter.push_back(LineIterator(bin_barcode, current_point, right_point));
+        list_line_iter.push_back(LineIterator(bin_barcode, static_cast<cv::Point>(current_point), static_cast<cv::Point>(left_point)));
+        list_line_iter.push_back(LineIterator(bin_barcode, static_cast<cv::Point>(current_point), static_cast<cv::Point>(central_point)));
+        list_line_iter.push_back(LineIterator(bin_barcode, static_cast<cv::Point>(current_point), static_cast<cv::Point>(right_point)));
 
         for (size_t k = 0; k < list_line_iter.size(); k++)
         {
@@ -435,7 +435,7 @@ void QRDetect::fixationPoints(vector<Point2f> &local_point)
                     count_index++;
                     if (count_index == 3)
                     {
-                        list_area_pnt.push_back(p);
+                        list_area_pnt.push_back(static_cast<cv::Point2f>(p));
                         break;
                     }
                 }
@@ -608,7 +608,7 @@ bool QRDetect::computeTransformationPoints()
             {
                 if (locations[i] == non_zero_elem[j][k])
                 {
-                    new_non_zero_elem[j].push_back(locations[i]);
+                    new_non_zero_elem[j].push_back(static_cast<cv::Point2f>(locations[i]));
                 }
             }
         }
@@ -733,8 +733,8 @@ vector<Point2f> QRDetect::getQuadrilateral(vector<Point2f> angle_list)
     Mat fill_bin_barcode = bin_barcode.clone();
     for (size_t i = 0; i < angle_size; i++)
     {
-        LineIterator line_iter(bin_barcode, angle_list[ i      % angle_size],
-                                            angle_list[(i + 1) % angle_size]);
+        LineIterator line_iter(bin_barcode, static_cast<cv::Point>(angle_list[ i      % angle_size]),
+                                            static_cast<cv::Point>(angle_list[(i + 1) % angle_size]));
         for(int j = 0; j < line_iter.count; j++, ++line_iter)
         {
             Point p = line_iter.pos();
@@ -777,7 +777,7 @@ vector<Point2f> QRDetect::getQuadrilateral(vector<Point2f> angle_list)
     for (size_t i = 0; i < angle_size; i++)
     {
         min_norm = std::numeric_limits<double>::max();
-        Point closest_pnt;
+        Point2f closest_pnt;
         for (int j = 0; j < hull_size; j++)
         {
             double temp_norm = norm(hull[j] - angle_list[i]);
@@ -814,20 +814,20 @@ vector<Point2f> QRDetect::getQuadrilateral(vector<Point2f> angle_list)
         if (next_index_hull == hull_size) { next_index_hull = 0; }
         if (next_index_hull == -1) { next_index_hull = hull_size - 1; }
 
-        Point angle_closest_pnt =  norm(hull[index_hull] - angle_list[1]) >
-        norm(hull[index_hull] - angle_list[2]) ? angle_list[2] : angle_list[1];
+        Point angle_closest_pnt = static_cast<cv::Point>( norm(hull[index_hull] - angle_list[1]) >
+        norm(hull[index_hull] - angle_list[2]) ? angle_list[2] : angle_list[1]);
 
-        Point intrsc_line_hull =
-        intersectionLines(hull[index_hull], hull[next_index_hull],
-                          angle_list[1], angle_list[2]);
-        double temp_norm = getCosVectors(hull[index_hull], intrsc_line_hull, angle_closest_pnt);
+        Point intrsc_line_hull = static_cast<cv::Point>(
+        intersectionLines(static_cast<cv::Point2f>(hull[index_hull]), static_cast<cv::Point2f>(hull[next_index_hull]),
+                          static_cast<cv::Point2f>(angle_list[1]), static_cast<cv::Point2f>(angle_list[2])));
+        double temp_norm = getCosVectors(hull[index_hull], static_cast<cv::Point2f>(intrsc_line_hull), static_cast<cv::Point2f>(angle_closest_pnt));
         if (min_norm > temp_norm &&
             norm(hull[index_hull] - hull[next_index_hull]) >
             norm(angle_list[1] - angle_list[2]) * 0.1)
         {
             min_norm = temp_norm;
-            result_side_begin[0] = hull[index_hull];
-            result_side_end[0]   = hull[next_index_hull];
+            result_side_begin[0] = static_cast<cv::Point>(hull[index_hull]);
+            result_side_end[0]   = static_cast<cv::Point>(hull[next_index_hull]);
         }
 
 
@@ -837,8 +837,8 @@ vector<Point2f> QRDetect::getQuadrilateral(vector<Point2f> angle_list)
 
     if (min_norm == std::numeric_limits<double>::max())
     {
-        result_side_begin[0] = angle_list[1];
-        result_side_end[0]   = angle_list[2];
+        result_side_begin[0] = static_cast<cv::Point>(angle_list[1]);
+        result_side_end[0]   = static_cast<cv::Point>(angle_list[2]);
     }
 
     min_norm = std::numeric_limits<double>::max();
@@ -852,20 +852,20 @@ vector<Point2f> QRDetect::getQuadrilateral(vector<Point2f> angle_list)
         if (next_index_hull == hull_size) { next_index_hull = 0; }
         if (next_index_hull == -1) { next_index_hull = hull_size - 1; }
 
-        Point angle_closest_pnt =  norm(hull[index_hull] - angle_list[0]) >
-        norm(hull[index_hull] - angle_list[1]) ? angle_list[1] : angle_list[0];
+        Point angle_closest_pnt = static_cast<cv::Point>( norm(hull[index_hull] - angle_list[0]) >
+        norm(hull[index_hull] - angle_list[1]) ? angle_list[1] : angle_list[0]);
 
-        Point intrsc_line_hull =
+        Point intrsc_line_hull = static_cast<cv::Point>(
         intersectionLines(hull[index_hull], hull[next_index_hull],
-                          angle_list[0], angle_list[1]);
-        double temp_norm = getCosVectors(hull[index_hull], intrsc_line_hull, angle_closest_pnt);
+                          angle_list[0], angle_list[1]));
+        double temp_norm = getCosVectors(static_cast<cv::Point2f>(hull[index_hull]), static_cast<cv::Point2f>(intrsc_line_hull), static_cast<cv::Point2f>(angle_closest_pnt));
         if (min_norm > temp_norm &&
             norm(hull[index_hull] - hull[next_index_hull]) >
             norm(angle_list[0] - angle_list[1]) * 0.05)
         {
             min_norm = temp_norm;
-            result_side_begin[1] = hull[index_hull];
-            result_side_end[1]   = hull[next_index_hull];
+            result_side_begin[1] = static_cast<cv::Point>(hull[index_hull]);
+            result_side_end[1]   = static_cast<cv::Point>(hull[next_index_hull]);
         }
 
         index_hull = next_index_hull;
@@ -874,8 +874,8 @@ vector<Point2f> QRDetect::getQuadrilateral(vector<Point2f> angle_list)
 
     if (min_norm == std::numeric_limits<double>::max())
     {
-        result_side_begin[1] = angle_list[0];
-        result_side_end[1]   = angle_list[1];
+        result_side_begin[1] = static_cast<cv::Point>(angle_list[0]);
+        result_side_end[1]   = static_cast<cv::Point>(angle_list[1]);
     }
 
     bypass_orientation = testByPassRoute(hull, start_line[0], unstable_pnt);
@@ -911,17 +911,17 @@ vector<Point2f> QRDetect::getQuadrilateral(vector<Point2f> angle_list)
             { extra_index_hull = extra_next_index_hull; continue; }
 
             test_result_angle_list[0]
-            = intersectionLines(result_side_begin[0], result_side_end[0],
-                                result_side_begin[1], result_side_end[1]);
+            = intersectionLines(static_cast<cv::Point2f>(result_side_begin[0]), static_cast<cv::Point2f>(result_side_end[0]),
+                                static_cast<cv::Point2f>(result_side_begin[1]), static_cast<cv::Point2f>(result_side_end[1]));
             test_result_angle_list[1]
-            = intersectionLines(result_side_begin[1], result_side_end[1],
-                                hull[extra_index_hull], hull[extra_next_index_hull]);
+            = intersectionLines(static_cast<cv::Point2f>(result_side_begin[1]), static_cast<cv::Point2f>(result_side_end[1]),
+                                static_cast<cv::Point2f>(hull[extra_index_hull]), static_cast<cv::Point2f>(hull[extra_next_index_hull]));
             test_result_angle_list[2]
             = intersectionLines(hull[extra_index_hull], hull[extra_next_index_hull],
-                                hull[index_hull], hull[next_index_hull]);
+                                static_cast<cv::Point2f>(hull[index_hull]), static_cast<cv::Point2f>(hull[next_index_hull]));
             test_result_angle_list[3]
             = intersectionLines(hull[index_hull], hull[next_index_hull],
-                                result_side_begin[0], result_side_end[0]);
+                                static_cast<cv::Point2f>(result_side_begin[0]), static_cast<cv::Point2f>(result_side_end[0]));
 
             const double test_diff_area
                 = fabs(fabs(contourArea(test_result_angle_list)) - experimental_area);
@@ -1172,8 +1172,8 @@ void QRDecode::getPointsInsideQRCode(const vector<Point2f> &angle_list)
     Mat contour_mask = Mat::zeros(bin_barcode.size(), CV_8UC1);
     for (size_t i = 0; i < angle_size; i++)
     {
-        LineIterator line_iter(bin_barcode, angle_list[ i      % angle_size],
-                                            angle_list[(i + 1) % angle_size]);
+        LineIterator line_iter(bin_barcode, static_cast<cv::Point>(angle_list[ i      % angle_size]),
+                                            static_cast<cv::Point>(angle_list[(i + 1) % angle_size]));
         for(int j = 0; j < line_iter.count; j++, ++line_iter)
         {
             Point p = line_iter.pos();
@@ -1182,7 +1182,7 @@ void QRDecode::getPointsInsideQRCode(const vector<Point2f> &angle_list)
     }
     Point2f center_point = intersectionLines(angle_list[0], angle_list[2],
                                              angle_list[1], angle_list[3]);
-    floodFill(contour_mask, center_point, 255, 0, Scalar(), Scalar(), FLOODFILL_FIXED_RANGE);
+    floodFill(contour_mask, static_cast<cv::Point>(center_point), 255, 0, Scalar(), Scalar(), FLOODFILL_FIXED_RANGE);
 
     vector<Point> locations;
     findNonZero(contour_mask, locations);
@@ -1216,7 +1216,7 @@ bool QRDecode::computeClosestPoints(const vector<Point> &result_integer_hull)
         Point closest_pnt;
         for (size_t j = 0; j < result_integer_hull.size(); j++)
         {
-            Point integer_original_point = original_points[i];
+            Point integer_original_point = static_cast<cv::Point>(original_points[i]);
             double temp_norm = norm(integer_original_point - result_integer_hull[j]);
             if (temp_norm < min_norm)
             {
@@ -1315,7 +1315,7 @@ vector<Point> QRDecode::getPointsNearUnstablePoint(const vector<Point> &side, in
         if (norm(p2 - side[i - step]) < 5) { continue; }
         p3 = side[i - step];
 
-        double neighbour_angle = getCosVectors(p1, p2, p3);
+        double neighbour_angle = getCosVectors(static_cast<cv::Point2f>(p1), static_cast<cv::Point2f>(p2), static_cast<cv::Point2f>(p3));
         neighbour_angle = floor(neighbour_angle*1000)/1000;
 
         if ((neighbour_angle <= max_neighbour_angle) && (neighbour_angle < cos_angle_threshold))
@@ -1370,14 +1370,14 @@ bool QRDecode::findAndAddStablePoint()
         return false;
     }
 
-    if(arePointsNearest(unstable_point, current_side.front(), 3.0))
+    if(arePointsNearest(static_cast<cv::Point2f>(unstable_point), static_cast<cv::Point2f>(current_side.front()), 3.0))
     {
         start_current = (int)current_side.size() - 1;
         end_current = 0;
         step_current = -1;
         it_a = current_side.begin();
     }
-    else if(arePointsNearest(unstable_point, current_side.back(), 3.0))
+    else if(arePointsNearest(static_cast<cv::Point2f>(unstable_point), static_cast<cv::Point2f>(current_side.back()), 3.0))
     {
         start_current = 0;
         end_current = (int)current_side.size() - 1;
@@ -1388,14 +1388,14 @@ bool QRDecode::findAndAddStablePoint()
     {
         return false;
     }
-    if(arePointsNearest(unstable_point, next_side.front(), 3.0))
+    if(arePointsNearest(static_cast<cv::Point2f>(unstable_point), static_cast<cv::Point2f>(next_side.front()), 3.0))
     {
         start_next = (int)next_side.size() - 1;
         end_next = 0;
         step_next = -1;
         it_b = next_side.begin();
     }
-    else if(arePointsNearest(unstable_point, next_side.back(), 3.0))
+    else if(arePointsNearest(static_cast<cv::Point2f>(unstable_point), static_cast<cv::Point2f>(next_side.back()), 3.0))
     {
         start_next = 0;
         end_next = (int)next_side.size() - 1;
@@ -1426,7 +1426,7 @@ bool QRDecode::findAndAddStablePoint()
         b2 = next_side_points[2];
     }
 
-    Point stable_point = intersectionLines(a1, a2, b1, b2);
+    Point stable_point = static_cast<cv::Point>(intersectionLines(static_cast<cv::Point2f>(a1), static_cast<cv::Point2f>(a2), static_cast<cv::Point2f>(b1), static_cast<cv::Point2f>(b2)));
 
     const double max_side = std::max(bin_barcode.size().width, bin_barcode.size().height);
     if ((abs(stable_point.x) > max_side) || (abs(stable_point.y) > max_side))
@@ -1465,7 +1465,7 @@ bool QRDecode::findAndAddStablePoint()
 
     for (size_t i = 0; i < original_points.size(); i++)
     {
-        if(arePointsNearest(stable_point, original_points[i], 3.0))
+        if(arePointsNearest(static_cast<cv::Point2f>(stable_point), original_points[i], 3.0))
         {
             add_stable_point = false;
             break;
@@ -1480,7 +1480,7 @@ bool QRDecode::findAndAddStablePoint()
     }
     else
     {
-        stable_point = original_points[unstable_pair.first];
+        stable_point = static_cast<cv::Point>(original_points[unstable_pair.first]);
         closest_points[unstable_pair.first].second = stable_point;
         current_side.insert(it_a, stable_point);
         next_side.insert(it_b, stable_point);
@@ -1505,7 +1505,7 @@ bool QRDecode::findIndexesCurvedSides()
         for (size_t j = 0; j < sides_points[i].size(); j++)
         {
             Point arc_point = sides_points[i][j];
-            double dist = distancePointToLine(arc_point, arc_start, arc_end);
+            double dist = distancePointToLine(static_cast<cv::Point2f>(arc_point), static_cast<cv::Point2f>(arc_start), static_cast<cv::Point2f>(arc_end));
             dist_to_arc += dist;
         }
         dist_to_arc /= sides_points[i].size();
@@ -1630,9 +1630,9 @@ bool QRDecode::findPatternsVerticesPoints(vector<vector<Point> > &patterns_verti
 
         for(size_t j = 1; j < number_pnts_in_hull + 1; j++)
         {
-            double cos_angle = getCosVectors(convexhull_contours[(j - 1) % number_pnts_in_hull],
-                                             convexhull_contours[ j      % number_pnts_in_hull],
-                                             convexhull_contours[(j + 1) % number_pnts_in_hull]);
+            double cos_angle = getCosVectors(static_cast<cv::Point2f>(convexhull_contours[(j - 1) % number_pnts_in_hull]),
+                                             static_cast<cv::Point2f>(convexhull_contours[ j      % number_pnts_in_hull]),
+                                             static_cast<cv::Point2f>(convexhull_contours[(j + 1) % number_pnts_in_hull]));
             cos_angles_in_hull.push_back(std::pair<size_t, double>(j, cos_angle));
         }
 
@@ -1688,8 +1688,8 @@ bool QRDecode::findTempPatternsAddingPoints(vector<std::pair<int, vector<Point> 
     for (size_t i = 0; i < curved_incomplete_indexes.size(); i++)
     {
         int idx_curved_side = curved_incomplete_indexes[i];
-        Point close_transform_pnt_curr = original_points[idx_curved_side];
-        Point close_transform_pnt_next = original_points[(idx_curved_side + 1) % 4];
+        Point close_transform_pnt_curr = static_cast<cv::Point>(original_points[idx_curved_side]);
+        Point close_transform_pnt_next = static_cast<cv::Point>(original_points[(idx_curved_side + 1) % 4]);
 
         vector<size_t> patterns_indexes;
 
@@ -1716,8 +1716,8 @@ bool QRDecode::findTempPatternsAddingPoints(vector<std::pair<int, vector<Point> 
             vector<Point> points;
             for (size_t k = 0; k < vertices.size(); k++)
             {
-                double dist_to_side = distancePointToLine(vertices[k], close_transform_pnt_curr,
-                                                                       close_transform_pnt_next);
+                double dist_to_side = distancePointToLine(static_cast<cv::Point2f>(vertices[k]),static_cast<cv::Point2f>(close_transform_pnt_curr),
+                                                                                                static_cast<cv::Point2f>(close_transform_pnt_next));
                 vertices_dist_pair.push_back(std::pair<int, double>((int)k, dist_to_side));
             }
             if (vertices_dist_pair.size() == 0)
@@ -2035,7 +2035,7 @@ bool QRDecode::createSpline(vector<vector<Point2f> > &spline_lines)
         {
             if (index == second_arr.front())
             {
-                spline_lines[idx].push_back(closest_points[start].second);
+                spline_lines[idx].push_back(static_cast<cv::Point2f>(closest_points[start].second));
             }
             for (size_t i = 0; i < second_arr.size() - 1; i++)
             {
@@ -2181,8 +2181,8 @@ bool QRDecode::straightenQRCodeInParts()
 
         for (size_t j = 0; j < qrcode_locations.size(); j++)
         {
-            if ((pointPosition(start_point, finish_point, qrcode_locations[j]) >= 0) &&
-                (pointPosition(prev_start_point, prev_finish_point, qrcode_locations[j]) <= 0))
+            if ((pointPosition(start_point, finish_point, static_cast<cv::Point2f>(qrcode_locations[j])) >= 0) &&
+                (pointPosition(prev_start_point, prev_finish_point, static_cast<cv::Point2f>(qrcode_locations[j])) <= 0))
             {
                 test_mask.at<uint8_t>(qrcode_locations[j]) = 255;
             }
@@ -2202,11 +2202,11 @@ bool QRDecode::straightenQRCodeInParts()
         {
             for (size_t j = 0; j < closest_points.size(); j++)
             {
-                if (arePointsNearest(closest_points[j].second, prev_start_point, 3.0))
+                if (arePointsNearest(static_cast<cv::Point2f>(closest_points[j].second), prev_start_point, 3.0))
                 {
                     temp_closest_points[j] = perspective_points[0];
                 }
-                else if (arePointsNearest(closest_points[j].second, prev_finish_point, 3.0))
+                else if (arePointsNearest(static_cast<cv::Point2f>(closest_points[j].second), prev_finish_point, 3.0))
                 {
                     temp_closest_points[j] = perspective_points[1];
                 }
@@ -2216,11 +2216,11 @@ bool QRDecode::straightenQRCodeInParts()
         {
             for (size_t j = 0; j < closest_points.size(); j++)
             {
-                if (arePointsNearest(closest_points[j].second, finish_point, 3.0))
+                if (arePointsNearest(static_cast<cv::Point2f>(closest_points[j].second), finish_point, 3.0))
                 {
                     temp_closest_points[j] = perspective_points[2];
                 }
-                else if (arePointsNearest(closest_points[j].second, start_point, 3.0))
+                else if (arePointsNearest(static_cast<cv::Point2f>(closest_points[j].second), start_point, 3.0))
                 {
                     temp_closest_points[j] = perspective_points[3];
                 }
@@ -2385,8 +2385,8 @@ double QRDecode::getNumModules() {
             auto indexes = matchPatternPoints(pattern, original_points);
             if (indexes == std::make_pair(-1, -1))
                 return 0.;
-            Point2f vf[4] = {pattern[indexes.first % 4], pattern[(1+indexes.first) % 4],
-                                  pattern[(2+indexes.first) % 4], pattern[(3+indexes.first) % 4]};
+            Point2f vf[4] = {static_cast<cv::Point2f>(pattern[indexes.first % 4]), static_cast<cv::Point2f>(pattern[(1+indexes.first) % 4]),
+                                  static_cast<cv::Point2f>(pattern[(2+indexes.first) % 4]), static_cast<cv::Point2f>(pattern[(3+indexes.first) % 4])};
             for (int i = 1; i < 4; i++) {
                 pattern_distance[indexes.second] += (norm(vf[i] - vf[i-1]));
             }
@@ -2472,8 +2472,8 @@ static inline std::pair<double, int> getVersionByCode(double numModules, Mat qr,
     Point2d endVersionInfo1 = Point2d((numModules-8.)*moduleSize, moduleSize*6.);
     Point2d startVersionInfo2 = Point2d(0., (numModules-8.-3.)*moduleSize);
     Point2d endVersionInfo2 = Point2d(moduleSize*6., (numModules-8.)*moduleSize);
-    Mat v1(qr, Rect2d(startVersionInfo1, endVersionInfo1));
-    Mat v2(qr, Rect2d(startVersionInfo2, endVersionInfo2));
+    Mat v1(qr, static_cast<cv::Rect>(Rect2d(startVersionInfo1, endVersionInfo1)));
+    Mat v2(qr, static_cast<cv::Rect>(Rect2d(startVersionInfo2, endVersionInfo2)));
     const double thresh = 127.;
     resize(v1, v1, Size(3, 6), 0., 0., INTER_AREA);
     threshold(v1, v1, thresh, 255, THRESH_BINARY);
@@ -2530,7 +2530,7 @@ bool QRDecode::versionDefinition()
     CV_TRACE_FUNCTION();
     CV_LOG_DEBUG(NULL, "QR corners: " << original_points[0] << " " << original_points[1] << " " << original_points[2] <<
                       " " << original_points[3]);
-    LineIterator line_iter(intermediate, Point2f(0, 0), Point2f(test_perspective_size, test_perspective_size));
+    LineIterator line_iter(intermediate, Point(0, 0), static_cast<cv::Point>(Point2f(test_perspective_size, test_perspective_size)));
     Point black_point = Point(0, 0);
     for(int j = 0; j < line_iter.count; j++, ++line_iter)
     {
@@ -3291,9 +3291,9 @@ void QRDetectMulti::fixationPoints(vector<Point2f> &local_point)
         list_area_pnt.push_back(current_point);
 
         vector<LineIterator> list_line_iter;
-        list_line_iter.push_back(LineIterator(bin_barcode_temp, current_point, left_point));
-        list_line_iter.push_back(LineIterator(bin_barcode_temp, current_point, central_point));
-        list_line_iter.push_back(LineIterator(bin_barcode_temp, current_point, right_point));
+        list_line_iter.push_back(LineIterator(bin_barcode_temp, static_cast<cv::Point>(current_point), static_cast<cv::Point>(left_point)));
+        list_line_iter.push_back(LineIterator(bin_barcode_temp, static_cast<cv::Point>(current_point), static_cast<cv::Point>(central_point)));
+        list_line_iter.push_back(LineIterator(bin_barcode_temp, static_cast<cv::Point>(current_point), static_cast<cv::Point>(right_point)));
 
         for (size_t k = 0; k < list_line_iter.size(); k++)
         {
@@ -3315,7 +3315,7 @@ void QRDetectMulti::fixationPoints(vector<Point2f> &local_point)
                     count_index++;
                     if (count_index == 3)
                     {
-                        list_area_pnt.push_back(p);
+                        list_area_pnt.push_back(static_cast<cv::Point2f>(p));
                         break;
                     }
                 }
@@ -3360,7 +3360,7 @@ public:
     static BWCounter checkOnePair(const Point2f& tl, const Point2f& tr, const Point2f& bl, const Point2f& br, const Mat& img)
     {
         BWCounter res;
-        LineIterator li1(tl, tr), li2(bl, br);
+        LineIterator li1(static_cast<cv::Point>(tl), static_cast<cv::Point>(tr)), li2(static_cast<cv::Point>(bl), static_cast<cv::Point>(br));
         for (int i = 0; i < li1.count && i < li2.count; i++, li1++, li2++)
         {
             LineIterator it(img, li1.pos(), li2.pos());
@@ -3612,7 +3612,7 @@ void QRDetectMulti::findQRCodeContours(vector<Point2f>& tmp_localization_points,
     {
         for (size_t j = 0; j < contours[i].size(); j++)
         {
-            all_contours_points.push_back(contours[i][j]);
+            all_contours_points.push_back(static_cast<cv::Point2f>(contours[i][j]));
         }
     }
     Mat qrcode_labels;
@@ -3889,7 +3889,7 @@ bool QRDetectMulti::computeTransformationPoints(const size_t cur_ind)
             {
                 if (locations[i] == non_zero_elem[j][k])
                 {
-                    new_non_zero_elem[j].push_back(locations[i]);
+                    new_non_zero_elem[j].push_back(static_cast<cv::Point2f>(locations[i]));
                 }
             }
         }
@@ -4345,7 +4345,7 @@ struct FinderPatternInfo {
         int penaltyPoints = 0;
         int colorCounters[2] = {0, 0};
         if (imageRect.contains(Point(cvRound(end.x), cvRound(end.y)))) {
-            LineIterator lineIterator(start, end);
+            LineIterator lineIterator(static_cast<cv::Point>(start), static_cast<cv::Point>(end));
             uint8_t prevValue = img.at<uint8_t>(lineIterator.pos());
 
             vector<Point> vec = {lineIterator.pos()};

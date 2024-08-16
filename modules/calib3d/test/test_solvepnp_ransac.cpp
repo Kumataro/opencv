@@ -782,8 +782,8 @@ TEST(Calib3d_SolvePnPRansac, input_type)
     {
         points3d.push_back(cv::Point3i(5+i, 3, 2));
         points3d.push_back(cv::Point3i(5+i, 3+i, 2+i));
-        points2d.push_back(cv::Point2i(0, i));
-        points2d.push_back(cv::Point2i(-i, i));
+        points2d.push_back(static_cast<cv::Point2f>(cv::Point2i(0, i)));
+        points2d.push_back(static_cast<cv::Point2f>(cv::Point2i(-i, i)));
     }
     Mat R1, t1, R2, t2, R3, t3, R4, t4;
 

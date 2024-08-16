@@ -175,7 +175,7 @@ GAPI_OCV_KERNEL(OCVProcessPoses, ProcessPoses) {
 namespace vis {
 namespace {
 cv::Point2f midp(const cv::Rect &rc) {
-    return (rc.tl() + rc.br()) / 2;
+    return static_cast<cv::Point2f>((rc.tl() + rc.br()) / 2);
 };
 void bbox(cv::Mat &m, const cv::Rect &rc) {
     cv::rectangle(m, rc, cv::Scalar{0,255,0}, 2, cv::LINE_8, 0);
@@ -231,8 +231,8 @@ void vvec(cv::Mat &m, const cv::Mat &v, const cv::Rect &face_rc,
     gazeArrow.y = -gazeVector.y;
     gazeArrow  *= arrowLength;
 
-    cv::arrowedLine(m, left_mid,  left_mid  + gazeArrow, cv::Scalar(255, 0, 0), 2);
-    cv::arrowedLine(m, right_mid, right_mid + gazeArrow, cv::Scalar(255, 0, 0), 2);
+    cv::arrowedLine(m, static_cast<cv::Point>(left_mid),  static_cast<cv::Point>(left_mid  + gazeArrow), cv::Scalar(255, 0, 0), 2);
+    cv::arrowedLine(m, static_cast<cv::Point>(right_mid), static_cast<cv::Point>(right_mid + gazeArrow), cv::Scalar(255, 0, 0), 2);
 
     cv::Point2f gazeAngles;
     custom::gazeVectorToGazeAngles(gazeVector, gazeAngles);

@@ -167,9 +167,9 @@ void fourPointsTransform(const Mat& frame, const Point2f vertices[], Mat& result
     const Size outputSize = Size(100, 32);
 
     Point2f targetVertices[4] = {
-        Point(0, outputSize.height - 1),
-        Point(0, 0), Point(outputSize.width - 1, 0),
-        Point(outputSize.width - 1, outputSize.height - 1)
+        Point2f(0, outputSize.height - 1),
+        Point2f(0, 0), Point2f(outputSize.width - 1, 0),
+        Point2f(outputSize.width - 1, outputSize.height - 1)
     };
     Mat rotationMatrix = getPerspectiveTransform(vertices, targetVertices);
 

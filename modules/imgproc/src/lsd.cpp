@@ -1088,7 +1088,7 @@ void LineSegmentDetectorImpl::drawSegments(InputOutputArray _image, InputArray l
             const Vec4f& v = _lines.at<Vec4f>(i);
             const Point2f b(v[0], v[1]);
             const Point2f e(v[2], v[3]);
-            line(_image, b, e, Scalar(0, 0, 255), 1);
+            line(_image, static_cast<Point>(b), static_cast<Point>(e), Scalar(0, 0, 255), 1);
         }
     }
     else
@@ -1133,13 +1133,13 @@ int LineSegmentDetectorImpl::compareSegments(const Size& size, InputArray lines1
     {
         const Point2f b(_lines1.at<Vec4f>(i)[0], _lines1.at<Vec4f>(i)[1]);
         const Point2f e(_lines1.at<Vec4f>(i)[2], _lines1.at<Vec4f>(i)[3]);
-        line(I1, b, e, Scalar::all(255), 1);
+        line(I1, static_cast<Point>(b), static_cast<Point>(e), Scalar::all(255), 1);
     }
     for(int i = 0; i < N2; ++i)
     {
         const Point2f b(_lines2.at<Vec4f>(i)[0], _lines2.at<Vec4f>(i)[1]);
         const Point2f e(_lines2.at<Vec4f>(i)[2], _lines2.at<Vec4f>(i)[3]);
-        line(I2, b, e, Scalar::all(255), 1);
+        line(I2, static_cast<Point>(b), static_cast<Point>(e), Scalar::all(255), 1);
     }
 
     // Count the pixels that don't agree

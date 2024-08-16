@@ -109,7 +109,7 @@ int main( int argc, char** argv )
                     continue;
 
                 points[1][k++] = points[1][i];
-                circle( image, points[1][i], 3, Scalar(0,255,0), -1, 8);
+                circle( image, static_cast<cv::Point>(points[1][i]), 3, Scalar(0,255,0), -1, 8);
             }
             points[1].resize(k);
         }

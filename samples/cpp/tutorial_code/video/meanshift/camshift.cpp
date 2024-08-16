@@ -76,7 +76,7 @@ int main(int argc, char **argv)
         Point2f points[4];
         rot_rect.points(points);
         for (int i = 0; i < 4; i++)
-            line(frame, points[i], points[(i+1)%4], 255, 2);
+            line(frame, static_cast<cv::Point>(points[i]), static_cast<cv::Point>(points[(i+1)%4]), 255, 2);
         imshow("img2", frame);
 
         int keyboard = waitKey(30);

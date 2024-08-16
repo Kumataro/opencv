@@ -335,7 +335,7 @@ void SimpleBlobDetectorImpl::findBlobs(InputArray _image, InputArray _binaryImag
             std::vector<double> dists;
             for (size_t pointIdx = 0; pointIdx < contours[contourIdx].size(); pointIdx++)
             {
-                Point2d pt = contours[contourIdx][pointIdx];
+                Point2d pt = static_cast<cv::Point2d>(contours[contourIdx][pointIdx]);
                 dists.push_back(norm(center.location - pt));
             }
             std::sort(dists.begin(), dists.end());
@@ -466,7 +466,7 @@ void SimpleBlobDetectorImpl::detect(InputArray image, std::vector<cv::KeyPoint>&
             normalizer += centers[i][j].confidence;
         }
         sumPoint *= (1. / normalizer);
-        KeyPoint kpt(sumPoint, (float)(centers[i][centers[i].size() / 2].radius) * 2.0f);
+        KeyPoint kpt(static_cast<cv::Point2f>(sumPoint), (float)(centers[i][centers[i].size() / 2].radius) * 2.0f);
         keypoints.push_back(kpt);
     }
 

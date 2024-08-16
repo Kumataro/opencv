@@ -363,7 +363,7 @@ std::vector<Point2f> KeypointsModel::estimate(InputArray frame, float thresh)
             minMaxLoc(probMap, NULL, &prob, NULL, &maxLoc);
             if (prob > thresh)
             {
-                p = maxLoc;
+                p = static_cast<cv::Point2f>(maxLoc);
                 p.x *= (float)frameWidth / width;
                 p.y *= (float)frameHeight / height;
             }
@@ -1511,8 +1511,8 @@ struct TextDetectionModel_DB_Impl : public TextDetectionModel_Impl
         std::vector<std::vector<Point2f>> newLines;
         for (size_t i = 0; i < numPoints; i++) {
             std::vector<Point2f> newLine;
-            Point pt1 = inPoly[i];
-            Point pt2 = inPoly[(i - 1) % numPoints];
+            Point pt1 = static_cast<Point>(inPoly[i]);
+            Point pt2 = static_cast<Point>(inPoly[(i - 1) % numPoints]);
             Point vec = pt1 - pt2;
             float unclipDis = (float)(distance / norm(vec));
             Point2f rotateVec = Point2f(vec.y * unclipDis, -vec.x * unclipDis);

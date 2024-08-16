@@ -322,11 +322,11 @@ int main(int args, char** argv) {
     for (int obj_pt = 0; obj_pt < max_obj_pts; obj_pt++) {
         const int pt = img_idxs_per_cam[best_cam_idx][obj_pt];
         if (labels[obj_pt] > 0) { // plot plane points
-            circle (image1, pts1[pt], circle_sz, plane_colors[labels[obj_pt]-1], -1);
-            circle (image2, pts2[pt], circle_sz, plane_colors[labels[obj_pt]-1], -1);
+            circle (image1, static_cast<cv::Point>(pts1[pt]), circle_sz, plane_colors[labels[obj_pt]-1], -1);
+            circle (image2, static_cast<cv::Point>(pts2[pt]), circle_sz, plane_colors[labels[obj_pt]-1], -1);
         } else { // plot inliers
-            circle (image1, pts1[pt], circle_sz, Scalar(0,0,0), -1);
-            circle (image2, pts2[pt], circle_sz, Scalar(0,0,0), -1);
+            circle (image1, static_cast<cv::Point>(pts1[pt]), circle_sz, Scalar(0,0,0), -1);
+            circle (image2, static_cast<cv::Point>(pts2[pt]), circle_sz, Scalar(0,0,0), -1);
         }
     }
 

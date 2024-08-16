@@ -58,14 +58,14 @@ int main( int /*argc*/, char** /*argv*/ )
 
         // Draw the bounding box
         for( i = 0; i < 4; i++ )
-            line(img, vtx[i], vtx[(i+1)%4], Scalar(0, 255, 0), 1, LINE_AA);
+            line(img, static_cast<cv::Point>(vtx[i]), static_cast<cv::Point>(vtx[(i+1)%4]), Scalar(0, 255, 0), 1, LINE_AA);
 
         // Draw the triangle
         for( i = 0; i < 3; i++ )
-            line(img, triangle[i], triangle[(i+1)%3], Scalar(255, 255, 0), 1, LINE_AA);
+            line(img, static_cast<cv::Point>(triangle[i]), static_cast<cv::Point>(triangle[(i+1)%3]), Scalar(255, 255, 0), 1, LINE_AA);
 
         // Draw the circle
-        circle(img, center, cvRound(radius), Scalar(0, 255, 255), 1, LINE_AA);
+        circle(img, static_cast<cv::Point>(center), cvRound(radius), Scalar(0, 255, 255), 1, LINE_AA);
 
         imshow( "Rectangle, triangle & circle", img );
 

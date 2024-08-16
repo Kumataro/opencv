@@ -1873,7 +1873,7 @@ static bool ocl_detectMultiScale(InputArray _img, std::vector<Rect> &found_locat
         Size scaled_win_size(cvRound(winSize.width * scale),
             cvRound(winSize.height * scale));
         for (size_t j = 0; j < locations.size(); j++)
-            all_candidates.push_back(Rect(Point2d(locations[j]) * scale, scaled_win_size));
+            all_candidates.push_back(Rect(static_cast<cv::Point>(Point2d(locations[j]) * scale), scaled_win_size));
     }
     found_locations.assign(all_candidates.begin(), all_candidates.end());
     groupRectangles(found_locations, (int)group_threshold, 0.2);
@@ -3487,7 +3487,7 @@ void HOGDescriptor::groupRectangles(std::vector<cv::Rect>& rectList, std::vector
 
     for( i = 0; i < nclasses; i++ )
     {
-        cv::Rect r1 = rrects[i];
+        cv::Rect r1 = static_cast<cv::Rect>(rrects[i]);
         int n1 = numInClass[i];
         double w1 = foundWeights[i];
         if( n1 <= groupThreshold )
@@ -3500,7 +3500,7 @@ void HOGDescriptor::groupRectangles(std::vector<cv::Rect>& rectList, std::vector
             if( j == i || n2 <= groupThreshold )
                 continue;
 
-            cv::Rect r2 = rrects[j];
+            cv::Rect r2 = static_cast<cv::Rect>(rrects[j]);
 
             int dx = cv::saturate_cast<int>( r2.width * eps );
             int dy = cv::saturate_cast<int>( r2.height * eps );

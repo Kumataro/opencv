@@ -704,7 +704,7 @@ TEST(Charuco, testmatchImagePoints)
 typedef testing::TestWithParam<int> CharucoDraw;
 INSTANTIATE_TEST_CASE_P(/**/, CharucoDraw, testing::Values(CV_8UC2, CV_8SC2, CV_16UC2, CV_16SC2, CV_32SC2, CV_32FC2, CV_64FC2));
 TEST_P(CharucoDraw, testDrawDetected) {
-    vector<vector<Point>> detected_golds = {{Point(20, 20), Point(80, 20), Point(80, 80), Point2f(20, 80)}};
+    vector<vector<Point>> detected_golds = {{Point(20, 20), Point(80, 20), Point(80, 80), Point(20, 80)}};
     Point center_gold = (detected_golds[0][0] + detected_golds[0][1] + detected_golds[0][2] + detected_golds[0][3]) / 4;
     int type = GetParam();
     vector<Mat> detected(detected_golds[0].size(), Mat(4, 1, type));
@@ -873,9 +873,9 @@ TEST_P(CharucoBoardGenerate, issue_24806)
             outCorners[i].x = outCorners[i].x / (maxX - minX) * float(arucoZone.cols);
             outCorners[i].y = outCorners[i].y / (maxY - minY) * float(arucoZone.rows);
         }
-        Size dst_sz(outCorners[2] - outCorners[0]); // assuming CCW order
+        Size dst_sz(static_cast<cv::Point>(outCorners[2] - outCorners[0])); // assuming CCW order
         dst_sz.width = dst_sz.height = std::min(dst_sz.width, dst_sz.height);
-        Rect borderRect = Rect(outCorners[0], dst_sz);
+        Rect borderRect = Rect(static_cast<cv::Point>(outCorners[0]), dst_sz);
 
         //The test checks the inner and outer borders of the Aruco markers.
         //In the inner border of Aruco marker, all pixels should be black.

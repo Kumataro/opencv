@@ -112,9 +112,9 @@ void drawFrameAxes(InputOutputArray image, InputArray cameraMatrix, InputArray d
     projectPoints(axesPoints, rvec, tvec, cameraMatrix, distCoeffs, imagePoints);
 
     // draw axes lines
-    line(image, imagePoints[0], imagePoints[1], Scalar(0, 0, 255), thickness);
-    line(image, imagePoints[0], imagePoints[2], Scalar(0, 255, 0), thickness);
-    line(image, imagePoints[0], imagePoints[3], Scalar(255, 0, 0), thickness);
+    line(image, static_cast<cv::Point>(imagePoints[0]), static_cast<cv::Point>(imagePoints[1]), Scalar(0, 0, 255), thickness);
+    line(image, static_cast<cv::Point>(imagePoints[0]), static_cast<cv::Point>(imagePoints[2]), Scalar(0, 255, 0), thickness);
+    line(image, static_cast<cv::Point>(imagePoints[0]), static_cast<cv::Point>(imagePoints[3]), Scalar(255, 0, 0), thickness);
 }
 
 bool solvePnP( InputArray opoints, InputArray ipoints,

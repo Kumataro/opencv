@@ -153,25 +153,25 @@ static Rect extract3DBox(const Mat& frame, Mat& shownFrame, Mat& selectedObjFram
     if( !shownFrame.empty() )
     {
         if( nobjpt == 1 )
-            circle(shownFrame, imgpt[0], 3, Scalar(0,255,0), -1, LINE_AA);
+            circle(shownFrame, static_cast<cv::Point>(imgpt[0]), 3, Scalar(0,255,0), -1, LINE_AA);
         else if( nobjpt == 2 )
         {
-            circle(shownFrame, imgpt[0], 3, Scalar(0,255,0), -1, LINE_AA);
-            circle(shownFrame, imgpt[1], 3, Scalar(0,255,0), -1, LINE_AA);
-            line(shownFrame, imgpt[0], imgpt[1], Scalar(0,255,0), 3, LINE_AA);
+            circle(shownFrame, static_cast<cv::Point>(imgpt[0]), 3, Scalar(0,255,0), -1, LINE_AA);
+            circle(shownFrame, static_cast<cv::Point>(imgpt[1]), 3, Scalar(0,255,0), -1, LINE_AA);
+            line(shownFrame, static_cast<cv::Point>(imgpt[0]), static_cast<cv::Point>(imgpt[1]), Scalar(0,255,0), 3, LINE_AA);
         }
         else if( nobjpt == 3 )
             for( int i = 0; i < 4; i++ )
             {
-                circle(shownFrame, imgpt[i], 3, Scalar(0,255,0), -1, LINE_AA);
-                line(shownFrame, imgpt[i], imgpt[(i+1)%4], Scalar(0,255,0), 3, LINE_AA);
+                circle(shownFrame, static_cast<cv::Point>(imgpt[i]), 3, Scalar(0,255,0), -1, LINE_AA);
+                line(shownFrame, static_cast<cv::Point>(imgpt[i]), static_cast<cv::Point>(imgpt[(i+1)%4]), Scalar(0,255,0), 3, LINE_AA);
             }
         else
             for( int i = 0; i < 8; i++ )
             {
-                circle(shownFrame, imgpt[i], 3, Scalar(0,255,0), -1, LINE_AA);
-                line(shownFrame, imgpt[i], imgpt[(i+1)%4 + (i/4)*4], Scalar(0,255,0), 3, LINE_AA);
-                line(shownFrame, imgpt[i], imgpt[i%4], Scalar(0,255,0), 3, LINE_AA);
+                circle(shownFrame, static_cast<cv::Point>(imgpt[i]), 3, Scalar(0,255,0), -1, LINE_AA);
+                line(shownFrame, static_cast<cv::Point>(imgpt[i]), static_cast<cv::Point>(imgpt[(i+1)%4 + (i/4)*4]), Scalar(0,255,0), 3, LINE_AA);
+                line(shownFrame, static_cast<cv::Point>(imgpt[i]), static_cast<cv::Point>(imgpt[i%4]), Scalar(0,255,0), 3, LINE_AA);
             }
     }
 
@@ -224,7 +224,7 @@ static int select3DBox(const string& windowname, const string& selWinName, const
              mouse.event == EVENT_LBUTTONUP ||
              dragging) && nobjpt < 4 )
         {
-            Point2f m = mouse.pt;
+            Point2f m = static_cast<cv::Point2f>(mouse.pt);
 
             if( nobjpt < 2 )
                 imgpt[npt] = m;

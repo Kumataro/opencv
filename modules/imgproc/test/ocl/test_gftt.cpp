@@ -116,7 +116,7 @@ OCL_TEST_P(GoodFeaturesToTrack, Accuracy)
         int mistmatch = 0;
         for (size_t i = 0; i < pts.size(); ++i)
         {
-            Point2i a = upts[i], b = pts[i];
+            Point2i a = static_cast<cv::Point2i>(upts[i]), b = static_cast<cv::Point2i>(pts[i]);
 
             bool eq = std::abs(a.x - b.x) < 1 && std::abs(a.y - b.y) < 1 &&
                     std::abs(quality[i] - uquality[i]) <= 3.f * FLT_EPSILON * std::max(quality[i], uquality[i]);

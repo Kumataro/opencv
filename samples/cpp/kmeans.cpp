@@ -62,13 +62,13 @@ int main( int /*argc*/, char** /*argv*/ )
         for( i = 0; i < sampleCount; i++ )
         {
             int clusterIdx = labels.at<int>(i);
-            Point ipt = points.at<Point2f>(i);
+            Point ipt = static_cast<cv::Point>(points.at<Point2f>(i));
             circle( img, ipt, 2, colorTab[clusterIdx], FILLED, LINE_AA );
         }
         for (i = 0; i < (int)centers.size(); ++i)
         {
             Point2f c = centers[i];
-            circle( img, c, 40, colorTab[i], 1, LINE_AA );
+            circle( img, static_cast<cv::Point>(c), 40, colorTab[i], 1, LINE_AA );
         }
         cout << "Compactness: " << compactness << endl;
 

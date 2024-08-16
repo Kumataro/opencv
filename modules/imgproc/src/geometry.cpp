@@ -155,7 +155,7 @@ double cv::pointPolygonTest( InputArray _contour, Point2f pt, bool measureDist )
         }
         else
         {
-            v = cnt[total-1];
+            v = static_cast<cv::Point2f>(cnt[total-1]);
         }
 
         if( !measureDist )
@@ -167,7 +167,7 @@ double cv::pointPolygonTest( InputArray _contour, Point2f pt, bool measureDist )
                 if( is_float )
                     v = cntf[i];
                 else
-                    v = cnt[i];
+                    v = static_cast<cv::Point2f>(cnt[i]);
 
                 if( (v0.y <= pt.y && v.y <= pt.y) ||
                    (v0.y > pt.y && v.y > pt.y) ||
@@ -199,7 +199,7 @@ double cv::pointPolygonTest( InputArray _contour, Point2f pt, bool measureDist )
                 if( is_float )
                     v = cntf[i];
                 else
-                    v = cnt[i];
+                    v = static_cast<cv::Point2f>(cnt[i]);
 
                 dx = v.x - v0.x; dy = v.y - v0.y;
                 dx1 = pt.x - v0.x; dy1 = pt.y - v0.y;

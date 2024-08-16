@@ -87,8 +87,8 @@ void LSDBase::GenerateRotatedRect(Mat& image)
 {
     image = Mat::zeros(img_size, CV_8UC1);
 
-    Point center(rng.uniform(img_size.width/4, img_size.width*3/4),
-                 rng.uniform(img_size.height/4, img_size.height*3/4));
+    Point2f center(rng.uniform(img_size.width/4, img_size.width*3/4),
+                   rng.uniform(img_size.height/4, img_size.height*3/4));
     Size rect_size(rng.uniform(img_size.width/8, img_size.width/6),
                    rng.uniform(img_size.height/8, img_size.height/6));
     float angle = rng.uniform(0.f, 360.f);
@@ -100,7 +100,7 @@ void LSDBase::GenerateRotatedRect(Mat& image)
     rRect.points(vertices);
     for (int i = 0; i < 4; i++)
     {
-        line(image, vertices[i], vertices[(i + 1) % 4], Scalar(255), 3);
+        line(image, static_cast<cv::Point>(vertices[i]), static_cast<cv::Point>(vertices[(i + 1) % 4]), Scalar(255), 3);
     }
 }
 
@@ -329,7 +329,7 @@ TEST_F(Imgproc_LSD_Common, drawSegmentsVec4f)
         const Vec4f &v = linesVec4f[lineIndex];
         const Point2f b(v[0], v[1]);
         const Point2f e(v[2], v[3]);
-        line(expected, b, e, Scalar(0, 0, 255), 1);
+        line(expected, static_cast<Point>(b), static_cast<Point>(e), Scalar(0, 0, 255), 1);
     }
 
     ASSERT_EQ(sum(actual != expected) == Scalar::all(0), true);
@@ -360,7 +360,7 @@ TEST_F(Imgproc_LSD_Common, drawSegmentsVec4i)
         const Vec4f &v = linesVec4i[lineIndex];
         const Point2f b(v[0], v[1]);
         const Point2f e(v[2], v[3]);
-        line(expected, b, e, Scalar(0, 0, 255), 1);
+        line(expected, static_cast<Point>(b), static_cast<Point>(e), Scalar(0, 0, 255), 1);
     }
 
     ASSERT_EQ(sum(actual != expected) == Scalar::all(0), true);

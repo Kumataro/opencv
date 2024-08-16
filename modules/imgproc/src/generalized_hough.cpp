@@ -654,7 +654,7 @@ namespace
 
     void GeneralizedHoughGuilImpl::processTempl()
     {
-        buildFeatureList(templEdges_, templDx_, templDy_, templFeatures_, templCenter_);
+        buildFeatureList(templEdges_, templDx_, templDy_, templFeatures_, static_cast<cv::Point2d>(templCenter_));
     }
 
     void GeneralizedHoughGuilImpl::processImage()

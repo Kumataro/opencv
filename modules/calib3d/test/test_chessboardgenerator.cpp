@@ -69,7 +69,8 @@ struct Mult
 {
     float m;
     Mult(int mult) : m((float)mult) {}
-    Point2f operator()(const Point2f& p)const { return p * m; }
+    // To workaround for expilict Point, do convert to Point.
+    Point operator()(const Point2f& p)const { return static_cast<Point>(p * m); }
 };
 
 void ChessBoardGenerator::generateBasis(Point3f& pb1, Point3f& pb2) const

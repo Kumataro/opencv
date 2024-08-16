@@ -138,7 +138,7 @@ void CV_DrawingTest_CPP::draw( Mat& img )
     if( clipLine(Rect(0,0,imgSize.width,imgSize.height), p1, p2) && clipLine(imgSize, p1, p2) )
         ellipse( img, Point(390,100), Size(20,30), 60, 0, 220.0, Scalar(0,200,0), 4 ); //draw
 
-    ellipse( img, RotatedRect(Point(100,200),Size(200,100),160), Scalar(200,200,255), 5 );
+    ellipse( img, RotatedRect(Point2f(100,200),Size(200,100),160), Scalar(200,200,255), 5 );
 
     polyline.clear();
     ellipse2Poly( Point(430,180), Size(100,150), 30, 0, 150, 20, polyline );
@@ -331,7 +331,7 @@ void CV_DrawingTest_Far::draw(Mat& img)
     if (clipLine(Rect(32768 + 0, 0, imgSize.width, imgSize.height), p1, p2) && clipLine(imgSize, p1, p2))
         ellipse(img, Point(32768 + 390, 100), Size(20, 30), 60, 0, 220.0, Scalar(0, 200, 0), 4); //draw
 
-    ellipse(img, RotatedRect(Point(32768 + 100, 200), Size(200, 100), 160), Scalar(200, 200, 255), 5);
+    ellipse(img, RotatedRect(Point2f(32768 + 100, 200), Size(200, 100), 160), Scalar(200, 200, 255), 5);
 
     polyline.clear();
     ellipse2Poly(Point(32768 + 430, 180), Size(100, 150), 30, 0, 150, 20, polyline);

@@ -90,7 +90,7 @@ void goodFeaturesToTrack_Demo( int, void* )
     int radius = 4;
     for( size_t i = 0; i < corners.size(); i++ )
     {
-        circle( copy, corners[i], radius, Scalar(rng.uniform(0,255), rng.uniform(0, 256), rng.uniform(0, 256)), FILLED );
+        circle( copy, static_cast<cv::Point>(corners[i]), radius, Scalar(rng.uniform(0,255), rng.uniform(0, 256), rng.uniform(0, 256)), FILLED );
     }
 
     /// Show what you got

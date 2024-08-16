@@ -18,7 +18,7 @@ static void help(char** argv)
 
 static void draw_subdiv_point( Mat& img, Point2f fp, Scalar color )
 {
-    circle( img, fp, 3, color, FILLED, LINE_8, 0 );
+    circle( img, static_cast<cv::Point>(fp), 3, color, FILLED, LINE_8, 0 );
 }
 
 static void draw_subdiv( Mat& img, Subdiv2D& subdiv, Scalar delaunay_color )
@@ -64,7 +64,7 @@ static void locate_point( Mat& img, Subdiv2D& subdiv, Point2f fp, Scalar active_
         {
             Point2f org, dst;
             if( subdiv.edgeOrg(e, &org) > 0 && subdiv.edgeDst(e, &dst) > 0 )
-                line( img, org, dst, active_color, 3, LINE_AA, 0 );
+                line( img, static_cast<cv::Point>(org), static_cast<cv::Point>(dst), active_color, 3, LINE_AA, 0 );
 
             e = subdiv.getEdge(e, Subdiv2D::NEXT_AROUND_LEFT);
         }
@@ -88,7 +88,7 @@ static void paint_voronoi( Mat& img, Subdiv2D& subdiv )
     {
         ifacet.resize(facets[i].size());
         for( size_t j = 0; j < facets[i].size(); j++ )
-            ifacet[j] = facets[i][j];
+            ifacet[j] = static_cast<cv::Point>(facets[i][j]);
 
         Scalar color;
         color[0] = rand() & 255;
@@ -98,7 +98,7 @@ static void paint_voronoi( Mat& img, Subdiv2D& subdiv )
 
         ifacets[0] = ifacet;
         polylines(img, ifacets, true, Scalar(), 1, LINE_AA, 0);
-        circle(img, centers[i], 3, Scalar(), FILLED, LINE_AA, 0);
+        circle(img, static_cast<cv::Point>(centers[i]), 3, Scalar(), FILLED, LINE_AA, 0);
     }
 }
 

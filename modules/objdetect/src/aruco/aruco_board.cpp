@@ -115,13 +115,13 @@ void Board::Impl::generateImage(Size outSize, OutputArray img, int marginSize, i
         }
 
         // get marker
-        Size dst_sz(outCorners[2] - outCorners[0]); // assuming CCW order
+        Size dst_sz(static_cast<cv::Point>(outCorners[2] - outCorners[0])); // assuming CCW order
         dst_sz.width = dst_sz.height = std::min(dst_sz.width, dst_sz.height); //marker should be square
         dictionary.generateImageMarker(ids[m], dst_sz.width, marker, borderBits);
 
         if((outCorners[0].y == outCorners[1].y) && (outCorners[1].x == outCorners[2].x)) {
             // marker is aligned to image axes
-            marker.copyTo(out(Rect(outCorners[0], dst_sz)));
+            marker.copyTo(out(Rect(static_cast<cv::Point>(outCorners[0]), dst_sz)));
             continue;
         }
 

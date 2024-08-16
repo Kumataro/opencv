@@ -132,9 +132,9 @@ TEST_P(EstimateAffine2D, testConversion)
     std::vector<Point> tpts(3);
 
     // setting points that are not in the same line
-    fpts[0] = Point2f( rngIn(1,2), rngIn(5,6) );
-    fpts[1] = Point2f( rngIn(3,4), rngIn(3,4) );
-    fpts[2] = Point2f( rngIn(1,2), rngIn(3,4) );
+    fpts[0] = static_cast<cv::Point>(Point2f( rngIn(1,2), rngIn(5,6) ));
+    fpts[1] = static_cast<cv::Point>(Point2f( rngIn(3,4), rngIn(3,4) ));
+    fpts[2] = static_cast<cv::Point>(Point2f( rngIn(1,2), rngIn(3,4) ));
 
     transform(fpts, tpts, aff);
 

@@ -100,7 +100,7 @@ void thresh_callback(int, void* )
         Scalar color = Scalar( rng.uniform(0, 256), rng.uniform(0,256), rng.uniform(0,256) );
         drawContours( drawing, contours_poly, (int)i, color );
         rectangle( drawing, boundRect[i].tl(), boundRect[i].br(), color, 2 );
-        circle( drawing, centers[i], (int)radius[i], color, 2 );
+        circle( drawing, static_cast<cv::Point>(centers[i]), (int)radius[i], color, 2 );
     }
     //! [forContour]
 

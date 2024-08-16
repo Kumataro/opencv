@@ -2949,7 +2949,7 @@ void cvGetOptimalNewCameraMatrix( const CvMat* cameraMatrix, const CvMat* distCo
         if( validPixROI )
         {
             icvGetRectangles( cameraMatrix, distCoeffs, 0, &matM, imgSize, inner, outer );
-            cv::Rect r = inner;
+            cv::Rect r = static_cast<cv::Rect>(inner);
             r &= cv::Rect(0, 0, newImgSize.width, newImgSize.height);
             *validPixROI = cvRect(r);
         }

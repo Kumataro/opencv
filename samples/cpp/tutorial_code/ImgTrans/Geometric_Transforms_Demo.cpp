@@ -60,7 +60,7 @@ int main( int argc, char** argv )
     //! [Compute a rotation matrix with respect to the center of the image]
 
     //! [Get the rotation matrix with the specifications above]
-    Mat rot_mat = getRotationMatrix2D( center, angle, scale );
+    Mat rot_mat = getRotationMatrix2D( static_cast<cv::Point2f>(center), angle, scale );
     //! [Get the rotation matrix with the specifications above]
 
     //! [Rotate the warped image]

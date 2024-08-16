@@ -17,9 +17,9 @@ Rect2d selectROI(const String &video_name, const Mat &frame);
 void drawBoundingBox(Mat image, vector<Point2f> bb)
 {
     for(unsigned i = 0; i < bb.size() - 1; i++) {
-        line(image, bb[i], bb[i + 1], Scalar(0, 0, 255), 2);
+        line(image, static_cast<cv::Point>(bb[i]), static_cast<cv::Point>(bb[i + 1]), Scalar(0, 0, 255), 2);
     }
-    line(image, bb[bb.size() - 1], bb[0], Scalar(0, 0, 255), 2);
+    line(image, static_cast<cv::Point>(bb[bb.size() - 1]), static_cast<cv::Point>(bb[0]), Scalar(0, 0, 255), 2);
 }
 
 void drawStatistics(Mat image, const Stats& stats)

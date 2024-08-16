@@ -40,8 +40,8 @@ static void drawArrows(UMat& _frame, const vector<Point2f>& prevPts, const vecto
         {
             int line_thickness = 1;
 
-            Point p = prevPts[i];
-            Point q = nextPts[i];
+            Point p = static_cast<cv::Point>(prevPts[i]);
+            Point q = static_cast<cv::Point>(nextPts[i]);
 
             double angle = atan2((double) p.y - q.y, (double) p.x - q.x);
 

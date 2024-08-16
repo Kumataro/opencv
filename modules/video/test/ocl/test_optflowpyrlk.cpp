@@ -124,8 +124,8 @@ OCL_TEST_P(PyrLKOpticalFlow, Mat)
 
         if (status[i])
         {
-            cv::Point2i a = nextPts[i];
-            cv::Point2i b = cpuNextPts[i];
+            cv::Point2i a = static_cast<cv::Point2i>(nextPts[i]);
+            cv::Point2i b = static_cast<cv::Point2i>(cpuNextPts[i]);
 
             bool eq = std::abs(a.x - b.x) < 1 && std::abs(a.y - b.y) < 1;
             float errdiff = 0.0f;

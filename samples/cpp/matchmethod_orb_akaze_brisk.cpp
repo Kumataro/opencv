@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
                     for (it = bestMatches.begin(); it != bestMatches.end(); ++it)
                     {
                         cout << it->queryIdx << "\t" <<  it->trainIdx << "\t"  <<  it->distance << "\n";
-                        Point2d p=keyImg1[it->queryIdx].pt-keyImg2[it->trainIdx].pt;
+                        Point2d p=static_cast<cv::Point2d>(keyImg1[it->queryIdx].pt-keyImg2[it->trainIdx].pt);
                         cumSumDist2=p.x*p.x+p.y*p.y;
                     }
                     desMethCmp.push_back(cumSumDist2);

@@ -145,7 +145,7 @@ bool CV_RigidTransform_Test::testImage()
     }
     pyrDown(testImg, img);
 
-    Mat aff = cv::getRotationMatrix2D(Point(img.cols/2, img.rows/2), 1, 0.99);
+    Mat aff = cv::getRotationMatrix2D(static_cast<cv::Point2f>(Point(img.cols/2, img.rows/2)), 1, 0.99);
     aff.ptr<double>()[2]+=3;
     aff.ptr<double>()[5]+=3;
 

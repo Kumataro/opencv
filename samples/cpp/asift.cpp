@@ -178,9 +178,9 @@ int main(int argc, char** argv)
         int idx = indices[i];
         const Point2f& pi1 = pointPairs[idx].first;
         const Point2f& pi2 = pointPairs[idx].second;
-        circle(vis, pi1, 2, Scalar(0,255,0), -1);
-        circle(vis, pi2 + Point2f((float)w1,0), 2, Scalar(0,255,0), -1);
-        line(vis, pi1, pi2 + Point2f((float)w1,0), Scalar(0,255,0));
+        circle(vis, static_cast<cv::Point>(pi1), 2, Scalar(0,255,0), -1);
+        circle(vis, static_cast<cv::Point>(pi2 + Point2f((float)w1,0)), 2, Scalar(0,255,0), -1);
+        line(vis, static_cast<cv::Point>(pi1), static_cast<cv::Point>(pi2 + Point2f((float)w1,0)), Scalar(0,255,0));
     }
     if (inliers > maxlines)
         cout << "only " << maxlines << " inliers are visualized" << endl;

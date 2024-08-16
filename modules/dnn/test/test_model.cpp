@@ -51,7 +51,7 @@ public:
 
         std::vector<Rect2d> boxesDouble(boxes.size());
         for (int i = 0; i < boxes.size(); i++) {
-            boxesDouble[i] = boxes[i];
+            boxesDouble[i] = static_cast<cv::Rect2d>(boxes[i]);
         }
         normAssertDetections(refClassIds, refConfidences, refBoxes, classIds,
                              confidences, boxesDouble, "",

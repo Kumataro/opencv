@@ -22,17 +22,17 @@ int main( void )
 
     /// Create a sequence of points to make a contour
     vector<Point2f> vert(6);
-    vert[0] = Point( 3*r/2, static_cast<int>(1.34*r) );
-    vert[1] = Point( 1*r, 2*r );
-    vert[2] = Point( 3*r/2, static_cast<int>(2.866*r) );
-    vert[3] = Point( 5*r/2, static_cast<int>(2.866*r) );
-    vert[4] = Point( 3*r, 2*r );
-    vert[5] = Point( 5*r/2, static_cast<int>(1.34*r) );
+    vert[0] = Point2f( 3*r/2, static_cast<int>(1.34*r) );
+    vert[1] = Point2f( 1*r, 2*r );
+    vert[2] = Point2f( 3*r/2, static_cast<int>(2.866*r) );
+    vert[3] = Point2f( 5*r/2, static_cast<int>(2.866*r) );
+    vert[4] = Point2f( 3*r, 2*r );
+    vert[5] = Point2f( 5*r/2, static_cast<int>(1.34*r) );
 
     /// Draw it in src
     for( int i = 0; i < 6; i++ )
     {
-        line( src, vert[i],  vert[(i+1)%6], Scalar( 255 ), 3 );
+        line( src, static_cast<cv::Point>(vert[i]),  static_cast<cv::Point>(vert[(i+1)%6]), Scalar( 255 ), 3 );
     }
 
     /// Get the contours

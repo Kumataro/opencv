@@ -249,8 +249,8 @@ void TrackerTest<Tracker, ROI_t>::distanceAndOverlapTest()
                 break;
             tracker->update(frame, currentBB);
         }
-        float curDistance = calcDistance(currentBB, bbs.at(fc));
-        float curOverlap = calcOverlap(currentBB, bbs.at(fc));
+        float curDistance = calcDistance(static_cast<cv::Rect>(currentBB), bbs.at(fc));
+        float curOverlap = calcOverlap(static_cast<cv::Rect>(currentBB), bbs.at(fc));
 
 #ifdef DEBUG_TEST
         Mat result;

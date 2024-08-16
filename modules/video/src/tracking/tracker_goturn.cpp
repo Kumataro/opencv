@@ -68,7 +68,7 @@ bool TrackerGOTURNImpl::update(InputArray image, Rect& boundingBox)
     //Using prevFrame & prevBB from model and curFrame GOTURN calculating curBB
     InputArray curFrame = image;
     Mat prevFrame = image_;
-    Rect2d prevBB = boundingBox_;
+    Rect2d prevBB = static_cast<cv::Rect2d>(boundingBox_);
     Rect curBB;
 
     float padTargetPatch = 2.0;
@@ -91,10 +91,10 @@ bool TrackerGOTURNImpl::update(InputArray image, Rect& boundingBox)
     targetPatchRect.y = std::max(-prevFrame.rows * 0.5f, std::min(targetPatchRect.y, prevFrame.rows * 1.5f));
 
     copyMakeBorder(prevFrame, prevFramePadded, (int)targetPatchRect.height, (int)targetPatchRect.height, (int)targetPatchRect.width, (int)targetPatchRect.width, BORDER_REPLICATE);
-    targetPatch = prevFramePadded(targetPatchRect).clone();
+    targetPatch = prevFramePadded(static_cast<cv::Rect>(targetPatchRect)).clone();
 
     copyMakeBorder(curFrame, curFramePadded, (int)targetPatchRect.height, (int)targetPatchRect.height, (int)targetPatchRect.width, (int)targetPatchRect.width, BORDER_REPLICATE);
-    searchPatch = curFramePadded(targetPatchRect).clone();
+    searchPatch = curFramePadded(static_cast<cv::Rect>(targetPatchRect)).clone();
 
     // Preprocess
     // Resize

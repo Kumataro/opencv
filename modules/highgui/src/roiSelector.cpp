@@ -41,7 +41,7 @@ class ROISelector
         while (!(key == 32 || key == 27 || key == 13))
         {
             // draw the selected object
-            rectangle(selectorParams.image, selectorParams.box, Scalar(255, 0, 0), 2, 1);
+            rectangle(selectorParams.image, static_cast<cv::Rect>(selectorParams.box), Scalar(255, 0, 0), 2, 1);
 
             // draw cross air in the middle of bounding box
             if (showCrossair)
@@ -74,7 +74,7 @@ class ROISelector
 
             if (key == 'c' || key == 'C')//cancel selection
             {
-                selectorParams.box = Rect();
+                selectorParams.box = Rect_<double>();
                 break;
             }
         }
@@ -82,7 +82,7 @@ class ROISelector
         //cleanup callback
         setMouseCallback(windowName, emptyMouseHandler, NULL);
 
-        return selectorParams.box;
+        return static_cast<cv::Rect>(selectorParams.box);
     }
 
     void select(const String &windowName, Mat img, std::vector<Rect> &boundingBoxes,

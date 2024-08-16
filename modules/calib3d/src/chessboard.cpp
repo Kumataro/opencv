@@ -809,7 +809,7 @@ cv::Point2f Ellipse::getCenter()const
 
 void Ellipse::draw(cv::InputOutputArray img,const cv::Scalar &color)const
 {
-    cv::ellipse(img,center,axes,360-angle/CV_PI*180,0,360,color);
+    cv::ellipse(img,static_cast<cv::Point>(center),axes,360-angle/CV_PI*180,0,360,color);
 }
 
 bool Ellipse::contains(const cv::Point2f &pt)const
@@ -1446,7 +1446,7 @@ void Chessboard::Board::draw(cv::InputArray m,cv::OutputArray out,cv::InputArray
             }
             else
             {
-                cv::circle(image,*iter1,4,cv::Scalar(count*20,count*20,count*20,255),-1);
+                cv::circle(image,static_cast<cv::Point>(*iter1),4,cv::Scalar(count*20,count*20,count*20,255),-1);
                 ++count;
             }
         }
@@ -1468,31 +1468,31 @@ void Chessboard::Board::draw(cv::InputArray m,cv::OutputArray out,cv::InputArray
             if(cell->marker)
             {
                 if(cell->black)
-                    cv::circle(image,center,2,cv::Scalar::all(0),-1);
+                    cv::circle(image,static_cast<cv::Point>(center),2,cv::Scalar::all(0),-1);
                 else
                 {
-                    cv::circle(image,center,2,cv::Scalar::all(255),-1);
+                    cv::circle(image,static_cast<cv::Point>(center),2,cv::Scalar::all(255),-1);
                     // draw coordinate
                     if(col+1 < icols)
                     {
                         const Cell *cell2 = getCell(row,col+1);
                         cv::Point2f center2 = cell2->getCenter();
-                        cv::line(image,center,center2,cv::Scalar::all(127),2);
+                        cv::line(image,static_cast<cv::Point>(center),static_cast<cv::Point>(center2),cv::Scalar::all(127),2);
                     }
                     if(row+1 < irows)
                     {
                         const Cell *cell2 = getCell(row+1,col);
                         cv::Point2f center2 = cell2->getCenter();
-                        cv::line(image,center,center2,cv::Scalar::all(127),2);
+                        cv::line(image,static_cast<cv::Point>(center),static_cast<cv::Point>(center2),cv::Scalar::all(127),2);
                     }
                 }
             }
             else
             {
                 if(cell->black)
-                    cv::circle(image,center,size,cv::Scalar::all(255),-1);
+                    cv::circle(image,static_cast<cv::Point>(center),size,cv::Scalar::all(255),-1);
                 else
-                    cv::circle(image,center,size,cv::Scalar(0,0,10,255),-1);
+                    cv::circle(image,static_cast<cv::Point>(center),size,cv::Scalar(0,0,10,255),-1);
             }
         }
     }

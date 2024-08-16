@@ -88,7 +88,7 @@ void thresh_callback(int, void* )
     {
         Scalar color = Scalar( rng.uniform(0, 256), rng.uniform(0,256), rng.uniform(0,256) );
         drawContours( drawing, contours, (int)i, color, 2 );
-        circle( drawing, mc[i], 4, color, -1 );
+        circle( drawing, static_cast<cv::Point>(mc[i]), 4, color, -1 );
     }
 
     /// Show in a window

@@ -218,7 +218,7 @@ bool cv::find4QuadCornerSubpix(InputArray _img, InputOutputArray _corners, Size 
         for(int k = 0; k < 4; k++)
         {
             std::vector<Point2f> temp;
-            for(size_t j = 0; j < quads[k]->size(); j++) temp.push_back((*quads[k])[j]);
+            for(size_t j = 0; j < quads[k]->size(); j++) temp.push_back(static_cast<cv::Point2f>((*quads[k])[j]));
             approxPolyDP(Mat(temp), quads_approx[k], 0.5, true);
 
             findCorner(quads_approx[k], corners[i], quad_corners[k]);

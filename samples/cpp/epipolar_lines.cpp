@@ -80,13 +80,13 @@ int main(int args, char** argv) {
             const double mag1 = sqrt(a1*a1 + b1*b1), mag2 = (a2*a2 + b2*b2);
             a1 /= mag1; b1 /= mag1; c1 /= mag1; a2 /= mag2; b2 /= mag2; c2 /= mag2;
             if (plot_lines++ < max_lines) {
-                line(image1, Point2d(0, -c1/b1),
-                     Point2d((double)image1.cols, -(a1*image1.cols+c1)/b1), col, line_sz);
-                line(image2, Point2d(0, -c2/b2),
-                     Point2d((double)image2.cols, -(a2*image2.cols+c2)/b2), col, line_sz);
+                line(image1, static_cast<cv::Point>(Point2d(0, -c1/b1)),
+                     static_cast<cv::Point>(Point2d((double)image1.cols, -(a1*image1.cols+c1)/b1)), col, line_sz);
+                line(image2, static_cast<cv::Point>(Point2d(0, -c2/b2)),
+                     static_cast<cv::Point>(Point2d((double)image2.cols, -(a2*image2.cols+c2)/b2)), col, line_sz);
             }
-            circle (image1, pts1[pt], circle_sz, col, -1);
-            circle (image2, pts2[pt], circle_sz, col, -1);
+            circle (image1, static_cast<cv::Point>(pts1[pt]), circle_sz, col, -1);
+            circle (image2, static_cast<cv::Point>(pts2[pt]), circle_sz, col, -1);
             mean_err += (fabs(points1.col(pt).dot(l2)) / mag2 + fabs(points2.col(pt).dot(l1) / mag1)) / 2;
             num_inliers++;
         }

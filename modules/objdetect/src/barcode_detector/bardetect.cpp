@@ -398,11 +398,11 @@ void Detect::regionGrowing(int window_size)
             cos_sum = cos(2 * cur_value);
             counter = 1;
             edge_num = edge_nums.at<float_t>(pt);
-            growingPoints.push_back(pt);
-            growingImgPoints.push_back(Point(pt));
+            growingPoints.push_back(static_cast<cv::Point2f>(pt));
+            growingImgPoints.push_back(Point2f(pt));
             while (!growingPoints.empty())
             {
-                pt = growingPoints.back();
+                pt = static_cast<cv::Point>(growingPoints.back());
                 growingPoints.pop_back();
                 src_value = orientation.at<float_t>(pt);
 
@@ -430,8 +430,8 @@ void Detect::regionGrowing(int window_size)
                         cos_sum += cos(2 * cur_value);
                         counter += 1;
                         edge_num += edge_nums.at<float_t>(pt_to_grow);
-                        growingPoints.push_back(pt_to_grow);                 //push next point to grow back to stack
-                        growingImgPoints.push_back(pt_to_grow);
+                        growingPoints.push_back(static_cast<cv::Point2f>(pt_to_grow)); //push next point to grow back to stack
+                        growingImgPoints.push_back(static_cast<cv::Point2f>(pt_to_grow));
                     }
                 }
             }

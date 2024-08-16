@@ -116,7 +116,7 @@ void ZeroTermImagelessTracklet::RenewTrajectory(const cv::Rect2f &bounding_box) 
     ClearTrajectory();
     kalman_filter.reset(new KalmanFilterNoOpencv(bounding_box));
     kalman_filter->Predict();
-    kalman_filter->Correct(rect_predict);
+    kalman_filter->Correct(static_cast<cv::Rect2f>(rect_predict));
 
     trajectory.push_back(bounding_box);
     trajectory_filtered.push_back(bounding_box);
@@ -137,7 +137,7 @@ void ShortTermImagelessTracklet::RenewTrajectory(const cv::Rect2f &bounding_box)
     ClearTrajectory();
     kalman_filter.reset(new KalmanFilterNoOpencv(bounding_box));
     kalman_filter->Predict();
-    kalman_filter->Correct(rect_predict);
+    kalman_filter->Correct(static_cast<cv::Rect2f>(rect_predict));
 
     trajectory.push_back(bounding_box);
     trajectory_filtered.push_back(bounding_box);

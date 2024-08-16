@@ -403,7 +403,7 @@ void ShowProcessor::drawGridPoints(const cv::Mat &frame)
     if(mBoardType != ChArUco)
         for(std::vector<std::vector<cv::Point2f> >::iterator it = mCalibdata->imagePoints.begin(); it != mCalibdata->imagePoints.end(); ++it)
             for(std::vector<cv::Point2f>::iterator pointIt = (*it).begin(); pointIt != (*it).end(); ++pointIt)
-                cv::circle(frame, *pointIt, POINT_SIZE, cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
+                cv::circle(frame, static_cast<cv::Point>(*pointIt), POINT_SIZE, cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
     else
         for(std::vector<cv::Mat>::iterator it = mCalibdata->allCharucoCorners.begin(); it != mCalibdata->allCharucoCorners.end(); ++it)
             for(int i = 0; i < (*it).size[0]; i++)

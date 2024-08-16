@@ -84,7 +84,7 @@ void drawPoints(cv::Mat image, std::vector<cv::Point2f> &list_points_2d, std::ve
         cv::Point3f point_3d = list_points_3d[i];
 
         // Draw Selected points
-        cv::circle(image, point_2d, radius, color, -1, lineType );
+        cv::circle(image, static_cast<cv::Point>(point_2d), radius, color, -1, lineType );
 
         std::string idx = IntToString(i+1);
         std::string x = IntToString((int)point_3d.x);
@@ -94,7 +94,7 @@ void drawPoints(cv::Mat image, std::vector<cv::Point2f> &list_points_2d, std::ve
 
         point_2d.x = point_2d.x + 10;
         point_2d.y = point_2d.y - 10;
-        cv::putText(image, text, point_2d, fontFace, fontScale*0.5, color, thickness_font, 8);
+        cv::putText(image, text, static_cast<cv::Point>(point_2d), fontFace, fontScale*0.5, color, thickness_font, 8);
     }
 }
 
@@ -106,7 +106,7 @@ void draw2DPoints(cv::Mat image, std::vector<cv::Point2f> &list_points, cv::Scal
         cv::Point2f point_2d = list_points[i];
 
         // Draw Selected points
-        cv::circle(image, point_2d, radius, color, -1, lineType );
+        cv::circle(image, static_cast<cv::Point>(point_2d), radius, color, -1, lineType );
     }
 }
 
@@ -138,10 +138,10 @@ void draw3DCoordinateAxes(cv::Mat image, const std::vector<cv::Point2f> &list_po
     cv::Scalar blue(255,0,0);
     cv::Scalar black(0,0,0);
 
-    cv::Point2i origin = list_points2d[0];
-    cv::Point2i pointX = list_points2d[1];
-    cv::Point2i pointY = list_points2d[2];
-    cv::Point2i pointZ = list_points2d[3];
+    cv::Point2i origin = static_cast<cv::Point2i>(list_points2d[0]);
+    cv::Point2i pointX = static_cast<cv::Point2i>(list_points2d[1]);
+    cv::Point2i pointY = static_cast<cv::Point2i>(list_points2d[2]);
+    cv::Point2i pointZ = static_cast<cv::Point2i>(list_points2d[3]);
 
     drawArrow(image, origin, pointX, red, 9, 2);
     drawArrow(image, origin, pointY, green, 9, 2);
@@ -165,9 +165,9 @@ void drawObjectMesh(cv::Mat image, const Mesh *mesh, PnPProblem *pnpProblem, cv:
         cv::Point2f point_2d_1 = pnpProblem->backproject3DPoint(point_3d_1);
         cv::Point2f point_2d_2 = pnpProblem->backproject3DPoint(point_3d_2);
 
-        cv::line(image, point_2d_0, point_2d_1, color, 1);
-        cv::line(image, point_2d_1, point_2d_2, color, 1);
-        cv::line(image, point_2d_2, point_2d_0, color, 1);
+        cv::line(image, static_cast<cv::Point>(point_2d_0), static_cast<cv::Point>(point_2d_1), color, 1);
+        cv::line(image, static_cast<cv::Point>(point_2d_1), static_cast<cv::Point>(point_2d_2), color, 1);
+        cv::line(image, static_cast<cv::Point>(point_2d_2), static_cast<cv::Point>(point_2d_0), color, 1);
     }
 }
 

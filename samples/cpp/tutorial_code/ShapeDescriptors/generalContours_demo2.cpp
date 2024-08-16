@@ -89,7 +89,7 @@ void thresh_callback(int, void* )
         minRect[i].points( rect_points );
         for ( int j = 0; j < 4; j++ )
         {
-            line( drawing, rect_points[j], rect_points[(j+1)%4], color );
+            line( drawing, static_cast<cv::Point>(rect_points[j]), static_cast<cv::Point>(rect_points[(j+1)%4]), color );
         }
     }
 

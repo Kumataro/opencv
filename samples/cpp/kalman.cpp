@@ -7,7 +7,7 @@ using namespace cv;
 
 static inline Point calcPoint(Point2f center, double R, double angle)
 {
-    return center + Point2f((float)cos(angle), (float)-sin(angle))*(float)R;
+    return static_cast<cv::Point>(center + Point2f((float)cos(angle), (float)-sin(angle))*(float)R);
 }
 
 static void help()

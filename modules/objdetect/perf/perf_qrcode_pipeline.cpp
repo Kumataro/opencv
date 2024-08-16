@@ -106,7 +106,7 @@ PERF_TEST_P_(Perf_Objdetect_QRCode_Multi, decodeMulti)
     ASSERT_EQ(decoded_info.size(), straight_barcode.size());
     vector<Point> corners_result(corners.size());
     for (size_t i = 0ull; i < corners_result.size(); i++) {
-        corners_result[i] = corners[i];
+        corners_result[i] = static_cast<cv::Point>(corners[i]);
     }
 
     const int pixels_error = 7;

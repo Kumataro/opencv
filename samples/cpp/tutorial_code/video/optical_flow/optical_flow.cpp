@@ -81,8 +81,8 @@ int main(int argc, char **argv)
             if(status[i] == 1) {
                 good_new.push_back(p1[i]);
                 // draw the tracks
-                line(mask,p1[i], p0[i], colors[i], 2);
-                circle(frame, p1[i], 5, colors[i], -1);
+                line(mask,static_cast<cv::Point>(p1[i]), static_cast<cv::Point>(p0[i]), colors[i], 2);
+                circle(frame, static_cast<cv::Point>(p1[i]), 5, colors[i], -1);
             }
         }
         Mat img;

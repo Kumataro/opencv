@@ -209,7 +209,7 @@ int main( int argc, char* argv[] ){
         double dz;
         if( dem_coordinate.x >=    0    && dem_coordinate.y >=    0     &&
             dem_coordinate.x < dem.cols && dem_coordinate.y < dem.rows ){
-            dz = dem.at<short>(dem_coordinate);
+            dz = dem.at<short>(static_cast<cv::Point>(dem_coordinate));
         }else{
             dz = minElevation;
         }

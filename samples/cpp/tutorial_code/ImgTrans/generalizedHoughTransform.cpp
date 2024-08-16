@@ -87,7 +87,7 @@ int main() {
         Point2f vertices[4];
         rRect.points(vertices);
         for (int i = 0; i < 4; i++)
-            line(image, vertices[i], vertices[(i + 1) % 4], Scalar(255, 0, 0), 6);
+            line(image, static_cast<cv::Point>(vertices[i]), static_cast<cv::Point>(vertices[(i + 1) % 4]), Scalar(255, 0, 0), 6);
     }
 
 //  draw guil
@@ -98,7 +98,7 @@ int main() {
         Point2f vertices[4];
         rRect.points(vertices);
         for (int i = 0; i < 4; i++)
-            line(image, vertices[i], vertices[(i + 1) % 4], Scalar(0, 255, 0), 2);
+            line(image, static_cast<cv::Point>(vertices[i]), static_cast<cv::Point>(vertices[(i + 1) % 4]), Scalar(0, 255, 0), 2);
     }
 
     imshow("result_img", image);

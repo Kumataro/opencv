@@ -330,7 +330,7 @@ static void groupRectangles_meanshift(std::vector<Rect>& rectList, double detect
     for (int i=0; i < detectionCount; i++)
     {
         hitWeights[i] = foundWeights[i];
-        hitCenter = (rectList[i].tl() + rectList[i].br())*(0.5); //center of rectangles
+        hitCenter = static_cast<cv::Point2d>((rectList[i].tl() + rectList[i].br())*(0.5)); //center of rectangles
         hits[i] = Point3d(hitCenter.x, hitCenter.y, std::log(scales[i]));
     }
 

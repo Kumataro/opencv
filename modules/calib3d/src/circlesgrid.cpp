@@ -1236,9 +1236,9 @@ void CirclesGridFinder::computeRNG(Graph &rng, std::vector<cv::Point2f> &vectors
         vectors.push_back(keypoints[i] - keypoints[j]);
         if (drawImage != 0)
         {
-          line(*drawImage, keypoints[i], keypoints[j], Scalar(255, 0, 0), 2);
-          circle(*drawImage, keypoints[i], 3, Scalar(0, 0, 255), -1);
-          circle(*drawImage, keypoints[j], 3, Scalar(0, 0, 255), -1);
+          line(*drawImage, static_cast<cv::Point>(keypoints[i]), static_cast<cv::Point>(keypoints[j]), Scalar(255, 0, 0), 2);
+          circle(*drawImage, static_cast<cv::Point>(keypoints[i]), 3, Scalar(0, 0, 255), -1);
+          circle(*drawImage, static_cast<cv::Point>(keypoints[j]), 3, Scalar(0, 0, 255), -1);
         }
       }
     }
@@ -1353,7 +1353,7 @@ void CirclesGridFinder::drawBasis(const std::vector<Point2f> &basis, Point2f ori
   for (size_t i = 0; i < basis.size(); i++)
   {
     Point2f pt(basis[i]);
-    line(drawImg, origin, origin + pt, Scalar(0, (double)(i * 255), 0), 2);
+    line(drawImg, static_cast<cv::Point>(origin), static_cast<cv::Point>(origin + pt), Scalar(0, (double)(i * 255), 0), 2);
   }
 }
 
@@ -1379,7 +1379,7 @@ void CirclesGridFinder::drawBasisGraphs(const std::vector<Graph> &basisGraphs, M
         {
           if (basisGraphs[i].areVerticesAdjacent(v1, v2))
           {
-            line(drawImage, keypoints[v1], keypoints[v2], edgeColor, edgeThickness);
+            line(drawImage, static_cast<cv::Point>(keypoints[v1]), static_cast<cv::Point>(keypoints[v2]), edgeColor, edgeThickness);
           }
         }
       }
@@ -1389,7 +1389,7 @@ void CirclesGridFinder::drawBasisGraphs(const std::vector<Graph> &basisGraphs, M
   {
     for (size_t v = 0; v < basisGraphs[0].getVerticesCount(); v++)
     {
-      circle(drawImage, keypoints[v], vertexRadius, vertexColor, vertexThickness);
+      circle(drawImage, static_cast<cv::Point>(keypoints[v]), vertexRadius, vertexColor, vertexThickness);
     }
   }
 }
@@ -1415,11 +1415,11 @@ void CirclesGridFinder::drawHoles(const Mat &srcImage, Mat &drawImage) const
     for (size_t j = 0; j < holes[i].size(); j++)
     {
       if (j != holes[i].size() - 1)
-        line(drawImage, keypoints[holes[i][j]], keypoints[holes[i][j + 1]], Scalar(255, 0, 0), 2);
+        line(drawImage, static_cast<cv::Point>(keypoints[holes[i][j]]), static_cast<cv::Point>(keypoints[holes[i][j + 1]]), Scalar(255, 0, 0), 2);
       if (i != holes.size() - 1)
-        line(drawImage, keypoints[holes[i][j]], keypoints[holes[i + 1][j]], Scalar(255, 0, 0), 2);
+        line(drawImage, static_cast<cv::Point>(keypoints[holes[i][j]]), static_cast<cv::Point>(keypoints[holes[i + 1][j]]), Scalar(255, 0, 0), 2);
 
-      circle(drawImage, keypoints[holes[i][j]], holeRadius, holeColor, holeThickness);
+      circle(drawImage, static_cast<cv::Point>(keypoints[holes[i][j]]), holeRadius, holeColor, holeThickness);
     }
   }
 }

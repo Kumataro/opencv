@@ -795,10 +795,10 @@ Rect cv::DetectionBasedTracker::calcTrackedObjectPositionToShow(int i, ObjectSta
             Point tl(lastPositions[k].tl());
             Point br(lastPositions[k].br());
             Point2f c1;
-            c1=tl;
+            c1=static_cast<cv::Point2f>(tl);
             c1=c1* 0.5f;
             Point2f c2;
-            c2=br;
+            c2=static_cast<cv::Point2f>(br);
             c2=c2*0.5f;
             c1=c1+c2;
 
@@ -811,10 +811,10 @@ Rect cv::DetectionBasedTracker::calcTrackedObjectPositionToShow(int i, ObjectSta
         Point tl(lastPositions[k].tl());
         Point br(lastPositions[k].br());
         Point2f c1;
-        c1=tl;
+        c1=static_cast<cv::Point2f>(tl);
         c1=c1* 0.5f;
         Point2f c2;
-        c2=br;
+        c2=static_cast<cv::Point2f>(br);
         c2=c2*0.5f;
 
         center=c1+c2;

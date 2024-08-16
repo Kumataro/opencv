@@ -169,10 +169,10 @@ static void draw_warped_roi(Mat& image, const int width, const int height, Mat& 
     GET_HOMO_VALUES(U, bottom_right.x, bottom_right.y);
 
     // draw the warped perimeter
-    line(image, top_left, top_right, Scalar(255));
-    line(image, top_right, bottom_right, Scalar(255));
-    line(image, bottom_right, bottom_left, Scalar(255));
-    line(image, bottom_left, top_left, Scalar(255));
+    line(image, static_cast<cv::Point>(top_left), static_cast<cv::Point>(top_right), Scalar(255));
+    line(image, static_cast<cv::Point>(top_right), static_cast<cv::Point>(bottom_right), Scalar(255));
+    line(image, static_cast<cv::Point>(bottom_right), static_cast<cv::Point>(bottom_left), Scalar(255));
+    line(image, static_cast<cv::Point>(bottom_left), static_cast<cv::Point>(top_left), Scalar(255));
 }
 
 int main (const int argc, const char * argv[])

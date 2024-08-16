@@ -58,7 +58,7 @@ void TrackerMILModel::responseToConfidenceMap(const std::vector<Mat>& responses,
 
             //create the state
             Ptr<TrackerStateEstimatorMILBoosting::TrackerMILTargetState> currentState = Ptr<TrackerStateEstimatorMILBoosting::TrackerMILTargetState>(
-                    new TrackerStateEstimatorMILBoosting::TrackerMILTargetState(currentOfs, width, height, foreground, singleResponse));
+                    new TrackerStateEstimatorMILBoosting::TrackerMILTargetState(static_cast<cv::Point2f>(currentOfs), width, height, foreground, singleResponse));
 
             confidenceMap.push_back(std::make_pair(currentState, 0.0f));
         }

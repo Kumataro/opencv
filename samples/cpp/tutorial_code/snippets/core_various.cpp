@@ -32,7 +32,7 @@ int main()
 
     drawKeypoints(image, keypoints, result);
     for (vector<KeyPoint>::iterator k = keypoints.begin(); k != keypoints.end(); ++k)
-        circle(result, k->pt, (int)k->size, Scalar(0, 0, 255), 2);
+        circle(result, static_cast<cv::Point>(k->pt), (int)k->size, Scalar(0, 0, 255), 2);
 
     imshow("result", result);
     waitKey(0);
@@ -48,8 +48,8 @@ int main()
     rRect.points(vertices);
     for (int i = 0; i < 4; i++)
     {
-        line(test_image, vertices[i], vertices[(i+1)%4], Scalar(0,255,0), 2);
-        putText(test_image, vertex_names[i], vertices[i], FONT_HERSHEY_SIMPLEX, 1, Scalar(255,255,255));
+        line(test_image, static_cast<cv::Point>(vertices[i]), static_cast<cv::Point>(vertices[(i+1)%4]), Scalar(0,255,0), 2);
+        putText(test_image, vertex_names[i], static_cast<cv::Point>(vertices[i]), FONT_HERSHEY_SIMPLEX, 1, Scalar(255,255,255));
     }
 
     Rect brect = rRect.boundingRect();

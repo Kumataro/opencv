@@ -128,7 +128,7 @@ public:
         Point2f vtx[4];
         box.points(vtx);
         for( int j = 0; j < 4; j++ ){
-            line(img, vtx[j], vtx[(j+1)%4], color, lineThickness, LINE_AA);
+            line(img, static_cast<cv::Point>(vtx[j]), static_cast<cv::Point>(vtx[(j+1)%4]), color, lineThickness, LINE_AA);
         }
     }
 

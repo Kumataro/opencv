@@ -134,8 +134,8 @@ int main(int argc, char **argv)
     for (int n=0; n<npairs; n++)
     {
         // lookup 2 connected body/hand parts
-        Point2f a = points[POSE_PAIRS[midx][n][0]];
-        Point2f b = points[POSE_PAIRS[midx][n][1]];
+        Point2f a = static_cast<cv::Point2f>(points[POSE_PAIRS[midx][n][0]]);
+        Point2f b = static_cast<cv::Point2f>(points[POSE_PAIRS[midx][n][1]]);
 
         // we did not find enough confidence before
         if (a.x<=0 || a.y<=0 || b.x<=0 || b.y<=0)
@@ -145,9 +145,9 @@ int main(int argc, char **argv)
         a.x*=SX; a.y*=SY;
         b.x*=SX; b.y*=SY;
 
-        line(img, a, b, Scalar(0,200,0), 2);
-        circle(img, a, 3, Scalar(0,0,200), -1);
-        circle(img, b, 3, Scalar(0,0,200), -1);
+        line(img, static_cast<cv::Point>(a), static_cast<cv::Point>(b), Scalar(0,200,0), 2);
+        circle(img, static_cast<cv::Point>(a), 3, Scalar(0,0,200), -1);
+        circle(img, static_cast<cv::Point>(b), 3, Scalar(0,0,200), -1);
     }
 
     imshow("OpenPose", img);

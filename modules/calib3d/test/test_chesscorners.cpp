@@ -537,8 +537,8 @@ bool CV_ChessboardDetectorTest::checkByGenerator()
 
         vector< vector<Point> > cnts(1);
         vector<Point>& cnt = cnts[0];
-        cnt.push_back(cg[  0]); cnt.push_back(cg[0+2]);
-        cnt.push_back(cg[7+0]); cnt.push_back(cg[7+2]);
+        cnt.push_back(static_cast<cv::Point>(cg[  0])); cnt.push_back(static_cast<cv::Point>(cg[0+2]));
+        cnt.push_back(static_cast<cv::Point>(cg[7+0])); cnt.push_back(static_cast<cv::Point>(cg[7+2]));
         cv::drawContours(cb, cnts, -1, Scalar::all(128), FILLED);
 
         found = findChessboardCornersWrapper(cb, cbg.cornersSize(), corners_found,0);
@@ -756,12 +756,12 @@ TEST(Calib3d_AsymmetricCirclesPatternDetector, regression_18713)
         {
             const Point2f& pt = centers[i];
             //printf("{ %g, %g }, \n", pt.x, pt.y);
-            circle(img, pt, 5, Scalar(0, 255, 0));
+            circle(img, static_cast<cv::Point>(pt), 5, Scalar(0, 255, 0));
         }
         for (size_t i = 0; i < result.size(); i++)
         {
             const Point2f& pt = result[i];
-            circle(img, pt, 10, Scalar(0, 0, 255));
+            circle(img, static_cast<cv::Point>(pt), 10, Scalar(0, 0, 255));
         }
         imwrite("test_18713.png", img);
         if (cvtest::debugLevel >= 10)

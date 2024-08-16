@@ -188,7 +188,7 @@ int main(int argc, char *argv[])
                 drawKeypoints(img, keyImg, result);
                 int i = 0;
                 for (vector<KeyPoint>::iterator k = keyImg.begin(); k != keyImg.end(); ++k, ++i)
-                    circle(result, k->pt, (int)k->size, palette[i % 65536]);
+                    circle(result, static_cast<cv::Point>(k->pt), (int)k->size, palette[i % 65536]);
             }
             namedWindow(*itDesc + label, WINDOW_AUTOSIZE);
             imshow(*itDesc + label, result);

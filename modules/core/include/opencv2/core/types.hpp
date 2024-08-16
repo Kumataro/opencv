@@ -185,7 +185,7 @@ public:
     Point_& operator = (Point_&& pt) CV_NOEXCEPT = default;
 #endif
     //! conversion to another data type
-    template<typename _Tp2> operator Point_<_Tp2>() const;
+    template<typename _Tp2> explicit operator Point_<_Tp2>() const;
 
     //! conversion to the old-style C structures
     operator Vec<_Tp, 2>() const;
@@ -472,7 +472,7 @@ public:
     bool empty() const;
 
     //! conversion to another data type
-    template<typename _Tp2> operator Rect_<_Tp2>() const;
+    template<typename _Tp2> explicit operator Rect_<_Tp2>() const;
 
     //! checks whether the rectangle contains the point
     /*! @warning After OpenCV 4.11.0, when calling Rect.contains() with cv::Point2f / cv::Point2d point, point should not convert/round to int.
@@ -1931,7 +1931,7 @@ template<typename _Tp> static inline
 Rect_<_Tp>& operator &= ( Rect_<_Tp>& a, const Rect_<_Tp>& b )
 {
     if (a.empty() || b.empty()) {
-        a = Rect();
+        a = Rect_<_Tp>();
         return a;
     }
     const Rect_<_Tp>& Rx_min = (a.x < b.x) ? a : b;
@@ -1945,7 +1945,7 @@ Rect_<_Tp>& operator &= ( Rect_<_Tp>& a, const Rect_<_Tp>& b )
     // Let us first deal with the following case.
     if ((Rx_min.x < 0 && Rx_min.x + Rx_min.width < Rx_max.x) ||
         (Ry_min.y < 0 && Ry_min.y + Ry_min.height < Ry_max.y)) {
-        a = Rect();
+        a = Rect_<_Tp>();
         return a;
     }
     // We now know that either Rx_min.x >= 0, or
@@ -1957,7 +1957,7 @@ Rect_<_Tp>& operator &= ( Rect_<_Tp>& a, const Rect_<_Tp>& b )
     a.x = Rx_max.x;
     a.y = Ry_max.y;
     if (a.empty())
-        a = Rect();
+        a = Rect_<_Tp>();
     return a;
 }
 

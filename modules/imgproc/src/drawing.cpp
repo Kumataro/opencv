@@ -1286,7 +1286,7 @@ CollectPolyEdges( Mat& img, const Point2l* v, int count, std::vector<PolyEdge>& 
             t0.y = pt0.y; t1.y = pt1.y;
             t0.x = (pt0.x + (XY_ONE >> 1)) >> XY_SHIFT;
             t1.x = (pt1.x + (XY_ONE >> 1)) >> XY_SHIFT;
-            Line(img, t0, t1, color, line_type);
+            Line(img, static_cast<cv::Point>(t0), static_cast<cv::Point>(t1), color, line_type);
 
             // use clipped endpoints to create a more accurate PolyEdge
             if ((unsigned)t0.x >= (unsigned)(img.cols) ||
@@ -1671,7 +1671,7 @@ ThickLine( Mat& img, Point2l p0, Point2l p1, const void* color,
                 p0.y = (p0.y + (XY_ONE>>1)) >> XY_SHIFT;
                 p1.x = (p1.x + (XY_ONE>>1)) >> XY_SHIFT;
                 p1.y = (p1.y + (XY_ONE>>1)) >> XY_SHIFT;
-                Line( img, p0, p1, color, line_type );
+                Line( img, static_cast<cv::Point>(p0), static_cast<cv::Point>(p1), color, line_type );
             }
             else
                 Line2( img, p0, p1, color );
@@ -1835,7 +1835,7 @@ void line( InputOutputArray _img, Point pt1, Point pt2, const Scalar& color,
 
     double buf[4];
     scalarToRawData( color, buf, img.type(), 0 );
-    ThickLine( img, pt1, pt2, buf, thickness, line_type, 3, shift );
+    ThickLine( img, static_cast<cv::Point2l>(pt1), static_cast<cv::Point2l>(pt2), buf, thickness, line_type, 3, shift );
 }
 
 void arrowedLine(InputOutputArray img, Point pt1, Point pt2, const Scalar& color,
@@ -1877,10 +1877,10 @@ void rectangle( InputOutputArray _img, Point pt1, Point pt2,
 
     Point2l pt[4];
 
-    pt[0] = pt1;
+    pt[0] = static_cast<cv::Point2l>(pt1);
     pt[1].x = pt2.x;
     pt[1].y = pt1.y;
-    pt[2] = pt2;
+    pt[2] = static_cast<cv::Point2l>(pt2);
     pt[3].x = pt1.x;
     pt[3].y = pt2.y;
 
@@ -2510,7 +2510,7 @@ void cv::drawContours( InputOutputArray _image, InputArrayOfArrays _contours,
                 const bool isLastIter = j == npoints - 1;
                 const Point pt1 = cnt.at<Point>(j);
                 const Point pt2 = cnt.at<Point>(isLastIter ? 0 : j + 1);
-                cv::ThickLine(image, pt1 + offset, pt2 + offset, color_buf, thickness, lineType, 2, 0);
+                cv::ThickLine(image, static_cast<cv::Point2l>(pt1 + offset), static_cast<cv::Point2l>(pt2 + offset), color_buf, thickness, lineType, 2, 0);
             }
         }
     }
@@ -2643,9 +2643,9 @@ cvDrawContours( void* _img, CvSeq* contour,
                 {
                     prev_code = code;
                     if( thickness >= 0 )
-                        cv::ThickLine( img, prev_pt, pt, clr, thickness, line_type, 2, 0 );
+                        cv::ThickLine( img, static_cast<cv::Point2l>(prev_pt), static_cast<cv::Point2l>(pt), clr, thickness, line_type, 2, 0 );
                     else
-                        pts.push_back(pt);
+                        pts.push_back(static_cast<cv::Point2l>(pt));
                     prev_pt = pt;
                 }
 
@@ -2654,8 +2654,8 @@ cvDrawContours( void* _img, CvSeq* contour,
             }
 
             if( thickness >= 0 )
-                cv::ThickLine( img, prev_pt,
-                    cv::Point(((CvChain*)contour)->origin) + offset,
+                cv::ThickLine( img, static_cast<cv::Point2l>(prev_pt),
+                    cv::Point2l(((CvChain*)contour)->origin) + static_cast<cv::Point2l>(offset),
                     clr, thickness, line_type, 2, 0 );
             else
                 cv::CollectPolyEdges(img, &pts[0], (int)pts.size(),
@@ -2671,16 +2671,16 @@ cvDrawContours( void* _img, CvSeq* contour,
             { CvPoint pt_ = CV_STRUCT_INITIALIZER; CV_READ_SEQ_ELEM(pt_, reader); pt1 = pt_; }
             pt1 += offset;
             if( thickness < 0 )
-                pts.push_back(pt1);
+                pts.push_back(static_cast<cv::Point2l>(pt1));
 
             for( i = 0; i < count; i++ )
             {
                 { CvPoint pt_ = CV_STRUCT_INITIALIZER; CV_READ_SEQ_ELEM(pt_, reader); pt2 = pt_; }
                 pt2 += offset;
                 if( thickness >= 0 )
-                    cv::ThickLine( img, pt1, pt2, clr, thickness, line_type, 2, shift );
+                    cv::ThickLine( img, static_cast<cv::Point2l>(pt1), static_cast<cv::Point2l>(pt2), clr, thickness, line_type, 2, shift );
                 else
-                    pts.push_back(pt2);
+                    pts.push_back(static_cast<cv::Point2l>(pt2));
                 pt1 = pt2;
             }
             if( thickness < 0 )
