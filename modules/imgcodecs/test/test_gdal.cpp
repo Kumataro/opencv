@@ -8,6 +8,8 @@ namespace opencv_test { namespace {
 
 #ifdef HAVE_GDAL
 
+#include <gdal.h> // for GDAL_VERSION
+
 static void test_gdal_read(const string filename) {
     const string path = cvtest::findDataFile(filename);
     Mat img;
@@ -26,11 +28,16 @@ TEST(Imgcodecs_gdal, read_envi)
     test_gdal_read("../cv/gdal/envi_test.raw");
 }
 
+// See https://gdal.org/en/stable/drivers/raster/fits.htm
+// FITS format requires GDAL v3.2.0 or later
+#if GDAL_VERSION_NUM >= GDAL_COMPUTE_VERSION(3,2,0)
 
 TEST(Imgcodecs_gdal, read_fits)
 {
     test_gdal_read("../cv/gdal/fits_test.fit");
 }
+
+#endif
 
 
 #endif // HAVE_GDAL
