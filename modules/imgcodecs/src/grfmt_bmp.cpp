@@ -216,6 +216,39 @@ bool  BmpDecoder::readHeader()
         m_height = std::abs(m_height);
     }
 
+    // --- Added validation for overflow and invalid parameters ---
+
+    // Use int64_t to prevent overflow during intermediate calculations even on 32-bit systems
+    const int64_t width64 = m_width;
+    const int64_t height64 = m_height;
+    const int64_t channels64 = (m_bpp + 7) / 8;
+
+    // Check basic dimensions
+    if (result && (width64 <= 0 || height64 == 0 || m_bpp <= 0))
+    {
+        CV_LOG_WARNING(NULL, "imgcodecs(BMP): Invalid image dimensions or BPP");
+        result = false;
+    }
+
+    // Calculate source pitch with 4-byte alignment
+    // Calculation: (width * channels + 3) & ~3
+    const int64_t src_pitch64 = (width64 * channels64 + 3) & ~3;
+
+    // Validate pitch against OpenCV's internal limit (cv::Mat uses 'int' for step)
+    if (result && (src_pitch64 > (int64_t)INT_MAX))
+    {
+        CV_LOG_WARNING(NULL, "imgcodecs(BMP): Image row pitch exceeds INT_MAX");
+        result = false;
+    }
+
+    // Validate total memory size to prevent heap overflow
+    const int64_t total_size64 = src_pitch64 * height64;
+    if (result && (total_size64 > (int64_t)SIZE_MAX))
+    {
+        CV_LOG_WARNING(NULL, "imgcodecs(BMP): Total image size exceeds system SIZE_MAX");
+        result = false;
+    }
+
     if( !result )
     {
         m_offset = -1;
